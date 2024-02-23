@@ -1,7 +1,7 @@
-#**Grundlegendes Praxisprojekt**
+# **Grundlegendes Praxisprojekt**
 
 
-##**Projektziele**
+## **Projektziele**
 
 1. Erstellung einer Datendokumentation: Variablendefinitionen
 2. Prüfung der Validität und Bereinigung dieses automatisch erstellten Datensatzes:  
@@ -13,12 +13,12 @@
   Welche Fahrzeugeigenschaften stehen in besonders starkem Zusammenhang mit der ADAC-Testnote?  
   Welche anderen Faktoren modifizieren diese Zusammenhänge?
 
-##**Daten**
+## **Daten**
 
 - Quelle: Webscraping der ADAC-Testseiten (z.B. [VW Golf Variant 2.0 TDI](https://www.adac.de/rund-ums-fahrzeug/autokatalog/marken-modelle/vw/golf/viii/315172/))
 - Vollergebung der in Deutschland zugelassenen und vom ADAC getesteten Automodelle
 - ca. $200 000$ Fahrzeugmodelle mit $>300$ Fahrzeugeigenschaften
 
-###**Ansprechpartner**
+### **Ansprechpartner**
 
 Prof. Mathias Bühler (`mathias.buehler@econ.lmu.de`)
