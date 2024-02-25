@@ -1,1 +1,4 @@
-test nummer 2
+data <- read.csv("adac_test.csv")
+data
+
+
