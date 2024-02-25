@@ -4,5 +4,5 @@ Fragen an Herrn. Prof. Bühler:
 
 - Variablendefinition = Spaltendefinition ???
 
--
+- was bedeutet n.b.
 
