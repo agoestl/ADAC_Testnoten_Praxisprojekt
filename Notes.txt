@@ -7,3 +7,5 @@ Fragen an Herrn. Prof. Bühler:
 - was bedeutet n.b.
 
 - die Spalte für die Gesamtnote besteht nur aus NA (auch im originalen Datensatz)?
+
+- mehrere Zeilen identisch, doppelte Zeilen löschen?
