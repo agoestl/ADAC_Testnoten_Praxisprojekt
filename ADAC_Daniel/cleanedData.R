@@ -26,5 +26,18 @@ emptyCols <- names(percentageNA[percentageNA == 1])
 # leere Spalten entfernen, da sie keine Informationen beinhalten (meisten Zeilen enthalten, aber auch zu >90% nichts)
 dataSub[emptyCols] <- NULL
 
-# Einheiten von den Einträgen der Spalten entfernen
-# TODO
+# Einheiten der Einträgen von  interessanten Spalten entfernen
+# Spalte "Reichweite.WLTP..elektrisch."
+dataSub$Reichweite.WLTP..elektrisch. <- gsub(" km", "", dataSub$Reichweite.WLTP..elektrisch.)
+colnames(dataSub)[colnames(dataSub) == "Reichweite.WLTP..elektrisch."] <- "Reichweite.WLTP..elektrisch.in.km"
+dataSub$Reichweite.WLTP..elektrisch.in.km <- as.numeric(dataSub$Reichweite.WLTP..elektrisch.in.km)
+# Spalte "Reichweite.WLTP.City..elektrisch."
+dataSub$Reichweite.WLTP.City..elektrisch. <- gsub(" km", "", dataSub$Reichweite.WLTP.City..elektrisch.)
+colnames(dataSub)[colnames(dataSub) == "Reichweite.WLTP.City..elektrisch."] <- "Reichweite.WLTP.City..elektrisch.in.km"
+dataSub$Reichweite.WLTP.City..elektrisch.in.km<- as.numeric(dataSub$Reichweite.WLTP.City..elektrisch.in.km)
+# Spalte "Batteriekapazität..Netto..in.kWh"
+dataSub$Batteriekapazität..Netto..in.kWh <- as.numeric(dataSub$Batteriekapazität..Netto..in.kWh)
+# Spalte "CO2.Wert.kombiniert..WLTP."
+dataSub$CO2.Wert.kombiniert..WLTP. <- gsub(" g/km", "", dataSub$CO2.Wert.kombiniert..WLTP.)
+colnames(dataSub)[colnames(dataSub) == "CO2.Wert.kombiniert..WLTP."] <- "CO2.Wert.kombiniert..WLTP.in.g.per.km"
+dataSub$CO2.Wert.kombiniert..WLTP.in.g.per.km <- as.numeric(dataSub$CO2.Wert.kombiniert..WLTP.in.g.per.km)
