@@ -13,6 +13,10 @@ dataSub[dataSub == "Keine Angaben"] <- NA
 dataSub[dataSub == "keine Angabe"] <- NA
 dataSub[dataSub == "Keine Angabe"] <- NA
 
+#konkrete fehlende Werte anpassen
+dataSub$Leistung...Drehmoment..Elektromotor.2. <- gsub("n.b.", "-", dataSub$Leistung...Drehmoment..Elektromotor.2.)
+dataSub[dataSub == "- kW (- PS) / - Nm"] <- NA
+
 # Anteil der NA pro Spalte überprüfen
 percentageNA <- apply(dataSub, 2, function(col) sum(is.na(col))) / nrow(data)
 
