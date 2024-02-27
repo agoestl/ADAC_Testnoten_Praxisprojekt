@@ -4,9 +4,14 @@ data <- read.csv("adac_test.csv")
 dataSub <- data[, 276:364]
 
 # fehlende Werte Standarisieren, also "" -> NA etc.
-# fehlende Werte werden als NA, "", n.b. abgespeichert
 dataSub[dataSub == ""] <- NA
 dataSub[dataSub == "n.b."] <- NA
+dataSub[dataSub == "nicht bekannt"] <- NA
+dataSub[dataSub == "k.A."] <- NA
+dataSub[dataSub == "keine Angaben"] <- NA
+dataSub[dataSub == "Keine Angaben"] <- NA
+dataSub[dataSub == "keine Angabe"] <- NA
+dataSub[dataSub == "Keine Angabe"] <- NA
 
 # Anteil der NA pro Spalte überprüfen
 percentageNA <- apply(dataSub, 2, function(col) sum(is.na(col))) / nrow(data)
