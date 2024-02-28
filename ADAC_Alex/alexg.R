@@ -49,15 +49,16 @@ head(unique_Modell)
 
 #check for diffrent Marken and the frequency
 unique_Marke <- data.frame(sort(table(validate_data$Marke), decreasing = TRUE))
-head(unique_Marke)
+print(unique_Marke)
 
 #we remove the (z.b. S-Klasse) for better analysis later 
 validate_data[["Fahrzeugklasse"]] <- gsub("\\s*\\([^\\)]+\\)", "", validate_data[["Fahrzeugklasse"]])
 
 #check for diffrent Fahrzeugklassen and the frequency
 unique_Fahrzeugklassen <- data.frame(sort(table(validate_data$Fahrzeugklasse), decreasing = TRUE))
-head(unique_Fahrzeugklassen)
+print(unique_Fahrzeugklassen)
 #could be interesting for further analysis
+
 
 #### calculate the Gesamtzuggewicht
 # remove the kg to analysis it easier
@@ -73,6 +74,30 @@ validate_data$Anhängelast.gebremst.12. <- as.numeric(validate_data$Anhängelast
 #calculate
 validate_data$Gesamtzuggewicht <- ifelse(is.na(validate_data$Zul..Gesamtgewicht) | is.na(validate_data$Anhängelast.gebremst.12.), NA,
                                          validate_data$Zul..Gesamtgewicht + validate_data$Anhängelast.gebremst.12.)
+
+#remove the Euro 
+columne_to_remove_Euro <- c("KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen.", "Grundpreis")
+for (col in columne_to_remove_Euro) {
+  validate_data[[col]] <- gsub(" Euro$", "", validate_data[[col]])
+}
+
+# remove l/100km 
+columne_to_remove_l_km <- c("Verbrauch.Außerorts..NEFZ.", "Verbrauch.Innerorts..NEFZ.", "Verbrauch.Gesamt..NEFZ.")
+for (col in columne_to_remove_l_km) {
+  validate_data[[col]] <- gsub(" l/100 km$", "", validate_data[[col]])
+}
+
+# remove l 
+columne_to_remove_l <- c("Kofferraumvolumen.dachhoch.mit.umgeklappter.Rücksitzbank", "Kofferraumvolumen.normal", "Tankgröße")
+for (col in columne_to_remove_l) {
+  validate_data[[col]] <- gsub(" l$", "", validate_data[[col]])
+}
+
+# remove g/km for C02
+columne_to_remove_g_km <- c("CO2.Wert..NEFZ.")
+for (col in columne_to_remove_g_km) {
+  validate_data[[col]] <- gsub(" g/km$", "", validate_data[[col]])
+}
 #decide wheater we use Modellstart/ende or Baureihenstart/ende 
 #validate_data <- subset(validate_data, select = -c())
 
