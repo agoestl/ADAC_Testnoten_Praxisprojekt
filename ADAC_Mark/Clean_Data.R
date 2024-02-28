@@ -19,5 +19,6 @@ keep.columns <- names(na.proportion[na.proportion < cutoff])
 cleaned.dataSubset <- dataSubset[, keep.columns]
 
 View(cleaned.dataSubset)
+#
 
 
