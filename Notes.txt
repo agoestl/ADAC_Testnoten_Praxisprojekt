@@ -1,11 +1,21 @@
 Fragen an Herrn. Prof. Bühler: 
 
-- ob man spalten ganz weg lassen kann 
 
-- Variablendefinition = Spaltendefinition ???
 
-- was bedeutet n.b.
 
-- die Spalte für die Gesamtnote besteht nur aus NA (auch im originalen Datensatz)?
 
-- mehrere Zeilen identisch, doppelte Zeilen löschen?
+
+
+Notizen:
+
+- Zeitverlauf für Analyse
+
+- Vorstellung 1. Folie Motivation
+
+- Zusammenhängende Präsentation
+
+- Dieselskandal Auswirkungen?
+
+- deutsche Autobauer vs Rest
+
+- 
