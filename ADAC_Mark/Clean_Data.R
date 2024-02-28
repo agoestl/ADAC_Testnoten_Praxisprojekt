@@ -8,6 +8,7 @@ dataSubset[dataSubset == "k.A."] <- NA
 dataSubset[dataSubset == "keine Angaben"] <- NA
 dataSubset[dataSubset == "nicht bekannt"] <- NA
 dataSubset[dataSubset == "Keine Angabe"] <- NA
+dataSubset[dataSubset == "keine Angabe"] <- NA
 
 # Calculate the proportion of NA's per column
 na.proportion <- sapply(dataSubset, function(x) mean(is.na(x)))
