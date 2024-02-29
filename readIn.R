@@ -1,1 +1,1 @@
-data <- read.csv("adac_test.csv")
+data <- read.csv("main/cleandedData.csv")
