@@ -1,0 +1,61 @@
+```{r}
+data <- read.csv("cleandedData.csv")
+```
+
+Interessante Variablen zum anschauen und im Verhältnis zu welchen anderen Variablen und Variablendefinition:
+
+1.    Marke: Gibt den Hersteller des Autos an.
+      Anschauen mit: Fast allen anderen interessanten Variablen. Vorallem mit CO2-Ausstoß und Effizienz des Motors, Größe/Volumen des Autos
+      
+2.    Modellstart/Baureihenstart: Gibt an, wann das Modell angefangen wurde, produziert zu werden.
+      Anschauen mit: Fast mit allen anderen interessanten Variablen. Vorllaem mit CO2-Ausstoß (Dieselskandal!)
+      
+3.    CO2-Effizienzklasse: Gibt die CO2-Effizienzklasse des Autos an.
+      Anschauen mit: Modellstart, Hubraumgröße, Leistung
+      
+4.    Grundpreis: Gibt den Preis des Autos in Euro an.
+      Anschauen mit:
+      
+5.    Motorart: Gibt die Motorart des Autos an. (Vllt. in allgeimeine Werte umwandeln, z.B. Verbrenner, Elektro, etc.)
+      Anschauen mit: Modellstart (Entwicklung zu Elektroautos erkennbar?)
+      
+6.    Leistung.maximal.in.PS..Systemleistung.: Gibt die maximale PS des Autos an.
+      Anschauen mit: Modellstart, CO2-Ausstoß
+      
+7.    Hubraum..Verbrennungsmotor. / Hubraum: Gibt die Hubraumgröße des Motors des Autos in ccm an.
+      Anschauen mit: Modellstart, CO2-Ausstoß, CO2-Effizienzklasse, Treibstoffverbrauch, Leistung
+      
+8.    Länge, Breite, Höhe -> Größe/Volumen: Gibt das Volumen des Autos in mm^3/m^3 an.
+      Anschauen mit: Modellstart (Autos werden immer größer), Hubraumgröße, CO2-Ausstoß, PS
+      
+9.    Leergewicht..EU.: Gibt das Leergewicht des Autos in kg an.
+      Anschauen mit: Größe?, Modellstart, Hubraumgröße, CO2-Effizienzklasse, CO2-Ausstoß
+      
+10.   Fahrzeugklasse: Gibt die Klasse des Autos an.
+      Anschauen mit: Marke, Hubraumgröße, CO2-Effizienklasse, CO2-Ausstoß, Verbrauch
+      
+11.   Höchstgeschwindigkeit: Gibt die Höchstgeschwindigkeit des Autos in km/h an.
+      Anschauen mit: 
+      
+12.   Verbrauch.Gesamt..NEFZ.: Gibt den Gesamtverbrauch des Autos in l/100km oder kg/100km oder kWh/100km an.
+      Anschauen mit: Modellstart, Größe, CO2-Ausstoß, CO2-Effizienzklasse
+      
+13.   CO2.Wert..NEFZ.: Gibt den CO2-Ausstoß des Autos in g/km an.
+      Anschauen mit: Verbrauch, Modellstart, Größe, Hubraumgröße, Fahrzeugklasse
+      
+14.   CO2.Ausstoß: Gibt den Vergleich zwischen dem CO2-Ausstoß nach Herstellerangabe und dem ADAC Ecotest an. (Vllt. nur Daten vom Ecotest in Spalte schreiben)
+      Anschauen mit: Marke (Dieselskandal!), Modellstart (Dieselskandal!), CO2-Ausstoß der Hersteller, Fahrzeugklasse
+      
+15.   Verbrauch: Gibt den Vergleich zwischen dem Verbrauch nach Herstellerangabe und dem ADAC Ecotest an. (Vllt. nur Daten vom Ecotest in Spalte schreiben)
+      Anschauen mit: Marke (Dieselskandal!), Modellstart (Dieselskandal!), Verbrauch der Hersteller, Fahrzeugklasse
+      
+16.   Ladezeiten: Gibt die Ladezeiten der Elektroautos bis zu 100% in Minuten für verschiedene Anschlüsse an.
+      Anschauen mit: Batteriekapazität, Modellstart, Marke
+      
+17.   Reichweite.WLTP..elektrisch.: Gibt die Reichweite für Elektroautos in km an.
+      Anschauen mit: Batteriekapazität, Modellstart, Marke
+      
+18.   Batteriekapazität..Netto..in.kWh: Gibt die Batteriekapazität der Autos in kWh an. (Hauptsächlich interessant für Elektroautos)
+      Anschauen mit: Modellstart, Marke
+      
+19.   
