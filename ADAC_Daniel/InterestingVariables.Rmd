@@ -58,4 +58,5 @@ Interessante Variablen zum anschauen und im Verhältnis zu welchen anderen Varia
 18.   Batteriekapazität..Netto..in.kWh: Gibt die Batteriekapazität der Autos in kWh an. (Hauptsächlich interessant für Elektroautos)
       Anschauen mit: Modellstart, Marke
       
-19.   
+19.   Sicherheitsaspekte: Gibt die Anzahl an eingebauten Sicherheitsfeatures des Autos an. (Muss noch erstellt werden aus allen möglichen Spalten)
+      Anschauen mit: Modellstart, Marke
