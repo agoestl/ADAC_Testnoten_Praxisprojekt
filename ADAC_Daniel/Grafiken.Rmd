@@ -1,0 +1,120 @@
+---
+title: "Grafiken"
+author: "Daniel Müller"
+date: "2024-03-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r Packages}
+library(tidyverse)
+
+```
+
+
+```{r Daten für Grafiken anpassen}
+data <- read.csv("cleandedData.csv")
+
+# Nur deutsche Automarken ohne ausländische Marken, die deutschen Herstellern gehören (z.B. MINI, Skoda, etc.)
+deutscheMarken <- c("Mercedes-Benz", "Opel", "Porsche", "smart", "ALPINA", "Audi", "BMW", "VW", "VW Nutzfahrzeuge")
+
+# Spalte für deutsch/ausländisch erstellen
+data <- data %>% 
+  mutate(deutscher.Hersteller = Marke %in% deutscheMarken,
+         deutscher.Hersteller = ifelse(deutscher.Hersteller, "deutsch", "ausländisch"))
+
+# CO2-Ausstoß Spalte zu numeric machen
+data <- data %>% 
+  mutate(CO2.Wert..NEFZ. = gsub(" g/km", "", CO2.Wert..NEFZ.),
+         CO2.Wert..NEFZ. = as.numeric(CO2.Wert..NEFZ.)) %>% 
+  rename(CO2.Ausstoß_g.pro.km = CO2.Wert..NEFZ.)
+
+# Baureihenstart zu Date umformatieren
+data <- data %>% 
+  mutate(Baureihenstart = as.Date(paste("01/", Baureihenstart, sep = ""), "%d/%m/%y"))
+
+# Fahrzeugklasse Beispiel entfernen
+data <- data %>% 
+  mutate(Fahrzeugklasse = gsub(" +\\(.*\\)", "", Fahrzeugklasse))
+
+# Motorarten zusammenfassen (z.B. alle Hybridarten zu Hybrid)
+data <- data %>% 
+  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid", Motorart))
+```
+
+#### Marke
+
+```{r Marke}
+# Häufigkeiten der einzelnen Marken
+ggplot(data, aes(x = Marke)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90))
+
+# Vergleich der Häufigkeiten von deutschen und ausländischen Herstellern
+ggplot(data, aes(x = deutscher.Hersteller)) +
+  geom_bar()
+```
+
+#### Baureihenstart und CO2-Ausstoß
+
+```{r Baureihenstart und CO2-Ausstoß}
+# Allgemeine Entwicklung  (zeitliche Entwicklung)
+data %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% # Vllt. ohne floor_date, aber dann geom_line mit geom_point ersetzen
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß)) +
+  geom_line() + 
+  labs(
+    title = "Allgemeine Entwicklung des CO2-Ausstoßes",
+    y = "CO2-Ausstoß")
+
+# Entwicklung pro Fahrzeugklasse (zeitliche Entwicklung)
+data %>% 
+  mutate(Fahrzeugklasse = gsub("Kleinstwagen|Microwagen", "Kleinwagen", Fahrzeugklasse)) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Fahrzeugklasse) %>% # Vllt. ohne floor_date, aber dann geom_line mit geom_point ersetzen
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Fahrzeugklasse)) +
+  geom_line() +
+  labs(
+    title = "Entwicklung des CO2-Ausstoßes nach Fahrzeugklassen",
+    y = "Durchschnittlicher CO2-Ausstoß")
+```
+
+#### Motorart und Baureihenstart
+
+```{r Motorart und Baureihenstart}
+# Häufigkeit der einzelnen Motorarten
+ggplot(data, aes(x = Motorart)) + 
+  geom_bar()
+
+# Häufigkeit der Motorarten nach Baureihenstart (zeitliche Entwicklung)
+data %>% 
+  mutate(
+    Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>% 
+  count() %>% 
+  ggplot(aes(x = Baureihenstart, y = n, color = Motorart)) +
+  geom_line() +
+  labs(y = "Anzahl")
+
+# Relative Häufigkeit der Motorarten nach Baureihenstart (zeitliche Entwicklung)
+data %>% 
+  mutate(
+    Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  mutate(Anzahl.Jahr = n()) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>%
+  mutate(Anzahl.Jahr.Motorart = n()) %>% 
+  mutate(relativ.Motorart = Anzahl.Jahr.Motorart / Anzahl.Jahr) %>% 
+  ggplot(aes(x = Baureihenstart, y = relativ.Motorart, color = Motorart)) +
+  geom_line() +
+  labs(
+    title = "Relative Häufigkeit der Motorarten nach Baureihenstart",
+    y = "relative Häufigkeit")
+```
+
