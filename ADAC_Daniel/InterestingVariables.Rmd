@@ -19,7 +19,7 @@ Interessante Variablen zum anschauen und im Verhältnis zu welchen anderen Varia
 5.    Motorart: Gibt die Motorart des Autos an. (Vllt. in allgeimeine Werte umwandeln, z.B. Verbrenner, Elektro, etc.)
       Anschauen mit: Modellstart (Entwicklung zu Elektroautos erkennbar?)
       
-6.    Leistung.maximal.in.PS..Systemleistung.: Gibt die maximale PS des Autos an.
+6.    Leistung.maximal.in.PS..Systemleistung.: Gibt die maximale PS des Autos an.  # Vllt. in kW angeben, da das die offizielle Angabe ist?
       Anschauen mit: Modellstart, CO2-Ausstoß
       
 7.    Hubraum..Verbrennungsmotor. / Hubraum: Gibt die Hubraumgröße des Motors des Autos in ccm an.
