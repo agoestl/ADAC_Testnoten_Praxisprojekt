@@ -1,0 +1,123 @@
+read in the Data 
+```{r}
+data <- read.csv("cleandedData.csv")
+library(tidyverse)
+library(ggplot2)
+```
+
+
+```{r}
+# Nur deutsche Automarken ohne ausländische Marken, die deutschen Herstellern gehören (z.B. MINI, Skoda, etc.)
+deutscheMarken <- c("Mercedes-Benz", "Opel", "Porsche", "smart", "ALPINA", "Audi", "BMW", "VW", "VW Nutzfahrzeuge")
+
+# Spalte für deutsch/ausländisch erstellen
+data <- data %>% 
+  mutate(deutscher.Hersteller = Marke %in% deutscheMarken,
+         deutscher.Hersteller = ifelse(deutscher.Hersteller, "deutsch", "ausländisch"))
+
+# CO2-Ausstoß Spalte zu numeric machen
+data <- data %>% 
+  mutate(CO2.Wert..NEFZ. = gsub(" g/km", "", CO2.Wert..NEFZ.),
+         CO2.Wert..NEFZ. = as.numeric(CO2.Wert..NEFZ.)) %>% 
+  rename(CO2.Ausstoß_g.pro.km = CO2.Wert..NEFZ.)
+
+# Baureihenstart zu Date umformatieren
+data <- data %>% 
+  mutate(Baureihenstart = as.Date(paste("01/", Baureihenstart, sep = ""), "%d/%m/%y"))
+
+# Fahrzeugklasse Beispiel entfernen
+data <- data %>% 
+  mutate(Fahrzeugklasse = gsub(" +\\(.*\\)", "", Fahrzeugklasse))
+
+# Motorarten zusammenfassen (z.B. alle Hybridarten zu Hybrid)
+data <- data %>% 
+  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid", Motorart))
+
+data %>%
+  count(Marke) %>%
+  top_n(5, n) %>%
+  pull(Marke) -> top_Marken
+```
+
+
+----------------------------------------------------------
+
+
+
+durschnittlicher Grundpreis bezüglich der 5 größten Autobauer über die Zeit (um eventuell die Inflation zu erkennen sprich Inflation noch hinzufügen) + Weltfinanzkrise 2007/8 (in unter ober mittelklasse aufteilen ???) Eurokrise 2010
+
+```{r}
+# remove Euro 
+data <- data %>% 
+  mutate(Grundpreis = gsub(" Euro$", "", Grundpreis))
+data <- data %>% mutate(Grundpreis = as.numeric(Grundpreis))
+
+data %>% filter(Marke %in% top_Marken) %>% 
+  group_by(Marke, Baureihenstart) %>%
+  mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Prize_average, color = Marke)) +
+  geom_smooth(method = "loess", span = 0.4, se = FALSE) + labs(title = "Durchschnittspreis pro Automarke über die Zeit", x = "Zeit", y = "Durchschnittspreis in €", color = "Marke")
+```
+
+Vergleich zwischen deutschen und ausländischen Marken (Dieselkrise wird deutlicher etc.)
+```{r}
+
+data %>% filter(deutscher.Hersteller != "deutsch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_ausländische_Marken
+data %>% filter(deutscher.Hersteller == "deutsch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_deutsche_Marken
+top_weltweit_marken <- c(top_ausländische_Marken, top_deutsche_Marken)
+
+data %>% filter(Marke %in% top_weltweit_marken) %>% 
+  group_by(Marke, Baureihenstart) %>%
+  mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Prize_average, color = Marke)) +
+  geom_smooth(method = "loess", span = 0.4, se = FALSE) + labs(title = "Durchschnittspreis pro Automarke über die Zeit", x = "Zeit", y = "Durchschnittspreis in €")
+```
+
+
+----------------------------------------------------------
+
+
+
+größe des Autos im Vergleich zum Baureihenstart 
+
+```{r}
+# remove mm and make it numeric
+
+data <- data %>% mutate(Länge = gsub(" mm$", "", Länge)) %>%
+                 mutate(Breite = gsub(" mm$", "", Breite)) %>%
+                 mutate(Höhe = gsub(" mm$", "", Höhe)) %>% 
+                 mutate(Länge = as.numeric(Länge)) %>% 
+                 mutate(Höhe = as.numeric(Höhe)) %>% 
+                 mutate(Breite = as.numeric(Breite))
+
+data %>% filter(Marke %in% top_Marken) %>% 
+  group_by(Marke, Baureihenstart) %>% 
+  mutate(Volumen = (Länge * Breite * Höhe) / 1000000) %>% 
+  ggplot(aes(x = Baureihenstart, y = Volumen, color = Marke)) + 
+  geom_smooth(method = "loess", span = 0.4, se = FALSE, na.rm = TRUE) + 
+  labs(title = "Größe pro Zeit", x = "Baureihenstart", y = "Größe in liter", color = "Marke")
+```
+
+
+----------------------------------------------------------
+
+
+
+
+relative Verteilung der Effiziensklassen über die Zeit (Abgasskandal 2015)
+```{r}
+data %>% group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  mutate(Anzahl.Jahr = n()) %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), CO2.Effizienzklasse) %>%
+  mutate(Anzahl.Jahr.CO2.Effizienzklasse = n()) %>%
+  mutate(relativ.CO2.Effizienzklasse = Anzahl.Jahr.CO2.Effizienzklasse / Anzahl.Jahr) %>%   
+  ggplot(aes(x = Baureihenstart, y = relativ.CO2.Effizienzklasse, color = CO2.Effizienzklasse)) + 
+  geom_line() + 
+  labs(title = "Effiziensklassenverteilung", x = "Baureihenstart", y = "relative Häufigkeiten", color = "CO2.Effizienzklasse")
+```
+
+verteilung von Effizienzklassen bezüglich Motorart
+```{r}
+
+```
+
