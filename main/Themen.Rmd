@@ -1,3 +1,53 @@
+
+```{r packages}
+library(tidyverse)
+```
+
+```{r Daten für Grafiken anpassen}
+data <- read.csv("cleandedData.csv")
+
+# Nur deutsche Automarken ohne ausländische Marken, die deutschen Herstellern gehören (z.B. MINI, Skoda, etc.)
+deutscheMarken <- c("Mercedes-Benz", "Opel", "Porsche", "smart", "ALPINA", "Audi", "BMW", "VW", "VW Nutzfahrzeuge")
+
+# Spalte für deutsch/ausländisch erstellen
+data <- data %>% 
+  mutate(deutscher.Hersteller = Marke %in% deutscheMarken,
+         deutscher.Hersteller = ifelse(deutscher.Hersteller, "deutsch", "ausländisch"))
+
+# CO2-Ausstoß Spalte zu numeric machen
+data <- data %>% 
+  mutate(CO2.Wert..NEFZ. = gsub(" g/km", "", CO2.Wert..NEFZ.),
+         CO2.Wert..NEFZ. = as.numeric(CO2.Wert..NEFZ.)) %>% 
+  rename(CO2.Ausstoß_g.pro.km = CO2.Wert..NEFZ.)
+
+# Baureihenstart zu Date umformatieren
+data <- data %>% 
+  mutate(Baureihenstart = as.Date(paste("01/", Baureihenstart, sep = ""), "%d/%m/%y"))
+
+# Fahrzeugklasse Beispiel entfernen
+data <- data %>% 
+  mutate(Fahrzeugklasse = gsub(" +\\(.*\\)", "", Fahrzeugklasse))
+
+# Motorarten zusammenfassen (z.B. alle Hybridarten zu Hybrid)
+data <- data %>% 
+  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid", Motorart),
+         Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas")))
+  
+
+# Hubraum..Verbrennungsmotor. zu numeric machen
+data <- data %>% 
+  mutate(Hubraum..Verbrennungsmotor. = gsub(" ccm", "", Hubraum..Verbrennungsmotor.),
+         Hubraum..Verbrennungsmotor. = as.numeric(Hubraum..Verbrennungsmotor.)) %>% 
+  rename(Hubraumgröße = Hubraum..Verbrennungsmotor.)
+
+# Verbrauch.Gesamt..NEFZ. zu numeric machen
+data <- data %>% 
+  mutate(Verbrauch.Gesamt..NEFZ. = gsub(" l/100 km| kWh/100 km| kg/100 km", "", Verbrauch.Gesamt..NEFZ.),
+         Verbrauch.Gesamt..NEFZ. = gsub(",", ".", Verbrauch.Gesamt..NEFZ.),
+         Verbrauch.Gesamt..NEFZ. = as.numeric(Verbrauch.Gesamt..NEFZ.)) %>% 
+  rename(Verbrauch.gesamt.in.l.kg.kWh_100Km = Verbrauch.Gesamt..NEFZ.)
+```
+
 Thema 1
 
 CO2-Effizienzklasse: Gibt die CO2-Effizienzklasse des Autos an.
@@ -22,7 +72,34 @@ Thema 3
 Motorart: Gibt die Motorart des Autos an. (Vllt. in allgeimeine Werte umwandeln, z.B. Verbrenner, Elektro, etc.)
 Anschauen mit: Modellstart (Entwicklung zu Elektroautos erkennbar?)
 ```{r}
+# Häufigkeit der einzelnen Motorarten
+ggplot(data, aes(x = Motorart)) + 
+  geom_bar()
 
+# Häufigkeit der Motorarten nach Baureihenstart (zeitliche Entwicklung)
+data %>% 
+  #mutate(
+  #  Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>% 
+  count() %>% 
+  ggplot(aes(x = Baureihenstart, y = n, color = Motorart)) +
+  geom_line() +
+  labs(y = "Anzahl")
+
+# Relative Häufigkeit der Motorarten nach Baureihenstart (zeitliche Entwicklung)
+data %>% 
+  #mutate(
+  #  Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  mutate(Anzahl.Jahr = n()) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>%
+  mutate(Anzahl.Jahr.Motorart = n()) %>% 
+  mutate(relativ.Motorart = Anzahl.Jahr.Motorart / Anzahl.Jahr) %>% 
+  ggplot(aes(x = Baureihenstart, y = relativ.Motorart, color = Motorart)) +
+  geom_line() +
+  labs(
+    title = "Relative Häufigkeit der Motorarten nach Baureihenstart",
+    y = "relative Häufigkeit")
 ```
 
 Thema 4
@@ -30,7 +107,85 @@ Thema 4
 Leistung.maximal.in.PS..Systemleistung.: Gibt die maximale PS des Autos an.  # Vllt. in kW angeben, da das die offizielle Angabe ist?
 Anschauen mit: Modellstart, CO2-Ausstoß, Motorart, Hubraumgröße, Leistung/Gewicht verhältniss (bei Alex)
 ```{r}
+# Leistung in PS nach Baureihenstart (zeitliche Entwicklung)
+data %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% 
+  summarise(Leistung.in.PS = mean(Leistung.maximal.in.PS..Systemleistung.)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Leistung.in.PS)) +
+  geom_line() +
+  labs(
+    title = "Leistung in PS nach Baureihenstart",
+    y = "PS"
+  )
 
+# CO2-Ausstoß nach Leistung in PS
+data %>% 
+  group_by(Leistung.maximal.in.PS..Systemleistung.) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  summarise(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Leistung.maximal.in.PS..Systemleistung., y = CO2.Ausstoß)) +
+  geom_point() +
+  geom_smooth(se = FALSE, color = "red") +
+  labs(
+    title = "CO2-Ausstoß nach Leistung in PS",
+    x = "PS"
+  )
+
+# Maximale Leistung nach Motorarten
+data %>% 
+  #mutate(
+  #  Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
+  group_by(Motorart) %>% 
+  summarise(Leistun.in.PS = max(Leistung.maximal.in.PS..Systemleistung.)) %>% 
+  ggplot(aes(x = Motorart, y = Leistun.in.PS)) +
+  geom_col() + 
+  labs(
+    title = "Maximale Leistung in PS nach Motorart",
+    y = "PS"
+  )
+
+# Maximale Leistung in PS der Motorarten nach Baureihenstart (zeitliche Entwicklung)
+data %>% 
+  #mutate(
+  #  Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>% 
+  mutate(Leistung.in.PS = mean(Leistung.maximal.in.PS..Systemleistung.)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Leistung.in.PS, color = Motorart)) +
+  geom_smooth(se = FALSE) + # Vllt durch geom_point oder geom_line ersetzen?
+  labs(
+  title = "Leistung in PS der Motorarten nach Baureihenstart",
+  y = "PS"
+  )
+
+# Leistung in PS nach Hubraumgröße
+data %>% 
+  drop_na(Hubraumgröße) %>% 
+  group_by(Hubraumgröße) %>% 
+  summarise(Leistung.in.PS = mean(Leistung.maximal.in.PS..Systemleistung.)) %>% 
+  ggplot(aes(x = Hubraumgröße, y = Leistung.in.PS)) + 
+  geom_point() +
+  geom_smooth(se = FALSE, color = "red") +
+  labs(
+    title = "Leistung in PS nach Hubraumgröße",
+    y = "PS"
+  )
+
+# CO2-Ausstoß nach Baureihenstart gruppiert nach Leistung in PS für Verbrenner
+data %>% 
+  filter(Motorart == "Verbrenner") %>% 
+  mutate(Leistung.maximal.in.PS..Systemleistung. = cut(Leistung.maximal.in.PS..Systemleistung.,
+                                                       breaks = c(0, 120, 180, 300, Inf))) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Leistung.maximal.in.PS..Systemleistung.) %>% 
+  mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Leistung.maximal.in.PS..Systemleistung.)) +
+  geom_line() +
+  labs(
+    title = "CO2-Ausstoß nach Baureihenstart gruppiert nach Leistung in PS (Verbrennermotor)",
+    y = "CO2-Ausstoß",
+    color = "PS"
+  ) +
+  scale_color_discrete(labels = c("<120", "120-180", "180-300", "300<"))
 ```
 
 Thema 5
@@ -38,7 +193,58 @@ Thema 5
 Hubraum..Verbrennungsmotor. / Hubraum: Gibt die Hubraumgröße des Motors des Autos in ccm an.
 Anschauen mit: Modellstart, CO2-Ausstoß, CO2-Effizienzklasse, Treibstoffverbrauch, Leistung (bei Daniel)
 ```{r}
+# Hubraumgröße in ccm nach Baureihenstart (zeitliche Entwicklung)
+data %>% 
+  drop_na(Hubraumgröße) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% 
+  summarise(Hubraumgröße = mean(Hubraumgröße)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Hubraumgröße)) +
+  geom_line() +
+  labs(
+    title = "Hubraumgröße nach Baureihenstart",
+    y = "Hubraumgröße in ccm"
+  )
 
+# CO2-Ausstoß nach Hubraumgröße in ccm für Verbrenner
+data %>% 
+  filter(Motorart == "Verbrenner") %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Hubraumgröße) %>% 
+  summarise(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Hubraumgröße, y = CO2.Ausstoß)) + 
+  geom_point() +
+  geom_smooth(se = FALSE, color = "red") +
+  labs(
+    title = "CO2-Ausstoß nach Hubraumgröße in ccm (Verbrenner)",
+    x = "Hubraumgröße in ccm",
+    y = "CO2-Ausstoß"
+  )
+
+# Treibstoffverbrauch nach Hubraumgröße
+data %>% 
+  filter(Motorart == "Verbrenner") %>% 
+  drop_na(Verbrauch.gesamt.in.l.kg.kWh_100Km) %>% 
+  group_by(Hubraumgröße) %>% 
+  summarise(Verbrauch.in.l_pro_100km = mean(Verbrauch.gesamt.in.l.kg.kWh_100Km)) %>% 
+  ggplot(aes(x = Hubraumgröße, y = Verbrauch.in.l_pro_100km)) +
+  geom_point() +
+  geom_smooth(se = FALSE, color = "red")
+
+# CO2-Ausstoß nach Baureihenstart gruppiert nach Hubraumgröße in ccm für Verbrenner
+data %>% 
+  filter(Motorart == "Verbrenner") %>% 
+  mutate(Hubraumgröße = cut(Hubraumgröße, breaks = c(0, 1500, 2000, 3000, Inf))) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Hubraumgröße) %>% 
+  mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Hubraumgröße)) +
+  geom_line() +
+  labs(
+    title = "CO2-Ausstoß nach Baureihenstart gruppiert nach Hubraumgröße in ccm (Verbrennermotor)",
+    y = "CO2-Ausstoß",
+    color = "ccm"
+  ) +
+  scale_color_discrete(labels = c("<1500", "1500-2000", "2000-3000", "3000<"))
 ```
 
 Thema 6
