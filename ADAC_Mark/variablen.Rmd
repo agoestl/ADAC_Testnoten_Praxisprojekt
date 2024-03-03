@@ -98,4 +98,4 @@ Unterschied zwischen Hersteller und ADAC Ecotets
 
 27. Batteriekapazität..Netto..in.kWh
 - nicht ganz sicher
-- Zeit, Reichweite
+- Zeit, Reichweite(?)
