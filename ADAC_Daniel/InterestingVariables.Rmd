@@ -20,7 +20,7 @@ Interessante Variablen zum anschauen und im Verhältnis zu welchen anderen Varia
       Anschauen mit: Modellstart (Entwicklung zu Elektroautos erkennbar?)
       
 6.    Leistung.maximal.in.PS..Systemleistung.: Gibt die maximale PS des Autos an.  # Vllt. in kW angeben, da das die offizielle Angabe ist?
-      Anschauen mit: Modellstart, CO2-Ausstoß, Motorart, Hubraumgröße
+      Anschauen mit: Modellstart, CO2-Ausstoß, Motorart, Hubraumgröße, Gewicht
       
 7.    Hubraum..Verbrennungsmotor. / Hubraum: Gibt die Hubraumgröße des Motors des Autos in ccm an.
       Anschauen mit: Modellstart, CO2-Ausstoß, CO2-Effizienzklasse, Treibstoffverbrauch, Leistung
