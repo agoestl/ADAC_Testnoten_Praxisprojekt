@@ -41,10 +41,11 @@ data %>%
 
 
 ----------------------------------------------------------
+4.    Grundpreis: Gibt den Preis des Autos in Euro an.
+      Anschauen mit: Baureihenstart
 
 
-
-durschnittlicher Grundpreis bezüglich der 5 größten Autobauer über die Zeit (um eventuell die Inflation zu erkennen sprich Inflation noch hinzufügen) + Weltfinanzkrise 2007/8 (in unter ober mittelklasse aufteilen ???) Eurokrise 2010
+durschnittlicher Grundpreis bezüglich der 5 größten Autobauer über die Zeit (Inflation ?) + Weltfinanzkrise 2007/8 + Eurokrise 2010
 
 ```{r}
 # remove Euro 
@@ -57,11 +58,16 @@ data %>% filter(Marke %in% top_Marken) %>%
   mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
   ggplot(aes(x = Baureihenstart, y = Prize_average, color = Marke)) +
   geom_smooth(method = "loess", span = 0.4, se = FALSE) + labs(title = "Durchschnittspreis pro Automarke über die Zeit", x = "Zeit", y = "Durchschnittspreis in €", color = "Marke")
+
+data %>% 
+  group_by(Fahrzeugklasse, Baureihenstart) %>%
+  mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Prize_average, color = Fahrzeugklasse)) +
+  geom_smooth(method = "loess", span = 0.4, se = FALSE) + labs(title = "Durchschnittspreis pro Fahrzeugklasse über die Zeit", x = "Zeit", y = "Durchschnittspreis in €", color = "Fahrzeugklasse")
 ```
 
 Vergleich zwischen deutschen und ausländischen Marken (Dieselkrise wird deutlicher etc.)
 ```{r}
-
 data %>% filter(deutscher.Hersteller != "deutsch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_ausländische_Marken
 data %>% filter(deutscher.Hersteller == "deutsch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_deutsche_Marken
 top_weltweit_marken <- c(top_ausländische_Marken, top_deutsche_Marken)
@@ -75,7 +81,8 @@ data %>% filter(Marke %in% top_weltweit_marken) %>%
 
 
 ----------------------------------------------------------
-
+8.    Länge, Breite, Höhe -> Größe/Volumen: Gibt das Volumen des Autos in mm^3/m^3 an.
+      Anschauen mit: Modellstart (Autos werden immer größer), Hubraumgröße, CO2-Ausstoß, PS
 
 
 größe des Autos im Vergleich zum Baureihenstart 
@@ -100,8 +107,8 @@ data %>% filter(Marke %in% top_Marken) %>%
 
 
 ----------------------------------------------------------
-
-
+3.    CO2-Effizienzklasse: Gibt die CO2-Effizienzklasse des Autos an.
+      Anschauen mit: Modellstart, Hubraumgröße, Leistung
 
 
 relative Verteilung der Effiziensklassen über die Zeit (Abgasskandal 2015)
@@ -116,8 +123,63 @@ data %>% group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>
   labs(title = "Effiziensklassenverteilung", x = "Baureihenstart", y = "relative Häufigkeiten", color = "CO2.Effizienzklasse")
 ```
 
-verteilung von Effizienzklassen bezüglich Motorart
+----------------------------------------------------------
+14.   CO2.Ausstoß: Gibt den Vergleich zwischen dem CO2-Ausstoß nach Herstellerangabe und dem ADAC Ecotest 
+      Anschauen mit: Marke (Dieselskandal!), Modellstart (Dieselskandal!), CO2-Ausstoß der Hersteller, Fahrzeugklasse
 ```{r}
 
 ```
 
+----------------------------------------------------------
+9.    Leergewicht..EU.: Gibt das Leergewicht des Autos in kg an.
+      Anschauen mit: Größe?, Modellstart, Hubraumgröße, CO2-Effizienzklasse, CO2-Ausstoß
+  
+Verhältniss von Gewicht zu Leistung     
+```{r}
+data <- data %>% mutate(Leergewicht..EU. = gsub(" kg$", "", Leergewicht..EU.)) %>% mutate(Leergewicht..EU. = as.numeric(Leergewicht..EU.))
+data %>% group_by(Motorart, Baureihenstart) %>% 
+  mutate(Verhältnis = Leergewicht..EU./Leistung.maximal.in.PS..Systemleistung.) %>% 
+  ggplot(aes(x = Baureihenstart, y = Verhältnis, color = Motorart)) + 
+  geom_smooth(method = "loess", span = 0.7, se = FALSE, na.rm = TRUE) + 
+  labs(title = "Leistungsgewicht in kg/PS abhängig von Motorart", x = "Baureihenstart", y = "Leistungsgewicht in kg/PS", color = "Motorart")
+```
+   
+   
+----------------------------------------------------------
+X. Laufende kosten (mit Vollkasko) über die Zeit im Vergleich mit Motorart
+
+```{r}
+data <- data %>% mutate(Betriebskosten = gsub(" €$", "", Betriebskosten)) %>%
+  mutate(Fixkosten = gsub(" €$", "", Fixkosten)) %>%
+  mutate(Werkstattkosten = gsub(" €$", "", Werkstattkosten)) %>% 
+  mutate(KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen. = gsub(" Euro$", "", KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen.)) %>%
+  mutate(Wertverlust = gsub(" €$", "", Wertverlust)) %>%
+  mutate(Haftpflichtbeitrag.100. = gsub("€$", "", Haftpflichtbeitrag.100.)) %>%
+  mutate(Betriebskosten = as.numeric(Betriebskosten)) %>% 
+  mutate(Fixkosten = as.numeric(Fixkosten)) %>% 
+  mutate(Werkstattkosten = as.numeric(Werkstattkosten)) %>% 
+  mutate(KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen. = as.numeric(KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen.)) %>% 
+  mutate(Haftpflichtbeitrag.100. = as.numeric(Haftpflichtbeitrag.100.)) %>% 
+  mutate(Wertverlust = as.numeric(Wertverlust))
+
+# ohne Wertverlust 
+data %>% 
+  group_by(Motorart, Baureihenstart) %>%
+  mutate(Laufendekosten = sum(c(Betriebskosten, Werkstattkosten, Fixkosten, KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen., Haftpflichtbeitrag.100.), na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Laufendekosten, color = Motorart)) +
+  geom_smooth(method = "loess", span = 0.7, se = FALSE) + 
+  labs(title = "Laufendekosten pro Motorart", x = "Zeit", y = "Laufendekosten in €")
+
+# mit Wertverlust
+data %>% 
+  group_by(Motorart, Baureihenstart) %>%
+  mutate(Laufendekosten = sum(c(Betriebskosten, Werkstattkosten, Fixkosten, KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen., Haftpflichtbeitrag.100., Wertverlust), na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Laufendekosten, color = Motorart)) +
+  geom_smooth(method = "loess", span = 0.7, se = FALSE) + 
+  labs(title = "Laufendekosten pro Motorart (mit Wertverlust)", x = "Zeit", y = "Laufendekosten in €")
+```
+
+
+----------------------------------------------------------
+X. Anlass : welcher Mängel aufgetreten ist 
+   Zusammen mit Baureihenstart und Marke und Anzahl betroffener Fahrzeuge
