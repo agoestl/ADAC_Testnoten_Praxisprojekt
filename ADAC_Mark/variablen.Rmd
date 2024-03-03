@@ -1,0 +1,101 @@
+```{r}
+data <- read.csv("cleandedData.csv")
+View(data)
+```
+
+1. Marke:
+- Automarke 
+- Eigentlich mit allen interessanten Variablen sinnvoll
+
+2. Baureihenstart:
+- Gibt an wann Modell Hersgestellt wurde
+- Als Zeitvariable verwenden
+
+3. CO2.Effizienzklasse 
+- Gibt CO2 Effizienzklasse an
+- Vergleich über Zeit, Autogröße, Leistung, 
+
+4. Grundpreis
+- Gibt Grundpreis des Autos in Euro an
+- Vergleich mit Reperaturkosten, Zeit (an inflation angleichen), 
+
+5. Motorart
+- Art des Motors
+- Leistung, Verbrauch, Reichweite, CO2 Effizienz, 
+
+6. Leistung.maximal.in.PS..Systemleistung.: oder lieber kW?
+- Gibt maximale PS des Autos an
+- Anschauen mit Zeit, CO2, Motorart(?)
+
+7. Schadsoffklasse?
+
+8. Fläche Auto erstellen aus:
+Breite (in mm)
+Länge (in mm)
+- Anschauen mit Zeit, Verbrauch, CO2 Ausstoß
+
+9. Höhe ? wie bei Fläche
+
+10. Leergewicht..Eu.:
+- Gibt leergewicht in kg an 
+- Über Zeit, Verbrauch, CO2 Ausstoß
+
+11. Karosserie:
+- gibt art von Auto an
+- siehe 12.
+
+12. Fahrzeugklasse:
+- Welche Fahrzeugklasse mit Beispielauto
+- Verbrauch, Kosten, Leistung, CO2, Zeit (wann wurden welche arten produziert)
+
+13. Beschleunigung.0.100km.h:
+- Beschleunigung von 0 auf 100 in sekunden
+- Leistung, Zeit, Gewicht
+
+14. Höchstgeschwindigkeit
+- wie Schnell wird Auto in km/h
+- Leistung, Gewicht, Zeit
+
+15. Verbrauch.Gesamt..NEFZ.:
+-  gibt Verbrauch in l/100km / kg/100km / kWh/100km
+- Zeit, Gewicht, Leistung, CO2 Ausstoß
+
+16. CO2.Wert..NEFZ.:
+- Ausstoß an CO2 in g/km
+- Zeit, Auto art(karosserie/Klasse), Leistung, Gewicht, Verbrauch
+
+17. Tankgröße
+- Gibt Tankgröße in l an
+- Zeit, Reichweite
+
+18. Sicherheitindex bilden?
+- Gurtsysteme, Airbags, Assistenten etc..
+
+19. kosten index bilden aus: 
+Fixkosten, Werkstattkosten, KFZ.Steuer.pro.Jahr.ohne.Steuerbefreiung / 12
+pro Monat, fünfjährige Haltung, 15.000 km/Jahr
+
+20 Wertverlust
+- wertverlust pro Monat, fünfjährige Haltung, 15.000 km/Jahr
+- Fahrzeugklasse
+
+21. Gesamtpunktzahl?? Col. 150-200
+
+22. CO2 in Punkten?? Col. 150-200
+
+23. Verbrauch vs ADAC.Testverbrauch
+- diskrepanz zwischen hersteller und echten daten
+- Zeit, Skandale??
+
+24. CO2.Ausstoß
+Unterschied zwischen Hersteller und ADAC Ecotets
+
+25. Leistung vs Leistung.maximal.in.kW..Systemleistung. ?? 
+
+26. Ladezeiten
+- 
+- Zeit
+
+27. Batteriekapazität..Netto..in.kWh
+- nicht ganz sicher
+- Zeit, Reichweite
