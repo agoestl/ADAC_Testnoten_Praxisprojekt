@@ -183,3 +183,9 @@ data %>%
 ----------------------------------------------------------
 X. Anlass : welcher Mängel aufgetreten ist 
    Zusammen mit Baureihenstart und Marke und Anzahl betroffener Fahrzeuge
+   
+   
+   
+----------------------------------------------------------
+X. Ausstattung zusammenrechnen: vergleich mit 
+   Baureihenstart und Marke 
