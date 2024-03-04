@@ -18,7 +18,14 @@ Notizen:
 
 - deutsche Autobauer vs Rest
 
--
+- motivation für die Entfernung der Zeilen / Spalten 
+
+- janitor in r 
+
+- methoden erklären geom smooth etc 
+
+- bei Grafiken auf die Farben achten etc. 
+
 
 
 Fragen an Scheipel :
@@ -30,3 +37,4 @@ Fragen an Scheipel :
 - Probevortrag 13-15 ?
 
 - 20.03 12 uhr fmm Nachklausur
+
