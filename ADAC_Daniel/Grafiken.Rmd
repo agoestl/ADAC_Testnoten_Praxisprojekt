@@ -352,5 +352,5 @@ data %>%
 ```
 Man erkennt, dass die durschnittliche Hubraumgröße über die Zeit gesunken ist.
 Man sieht, dass der CO2-Ausstoß im Vergleich mit der Hubraumgröße nicht linear ist und bei ca. 2200 ccm nicht mehr so stark ansteigt.
-Man kann auch ungefähr dasselbe beim Tre4ibstoffverbrauch erkennen.
+Man kann auch ungefähr dasselbe beim Treibstoffverbrauch erkennen.
 
