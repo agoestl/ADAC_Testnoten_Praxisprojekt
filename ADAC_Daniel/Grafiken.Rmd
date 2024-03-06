@@ -64,6 +64,14 @@ data <- data %>%
   mutate(Leergewicht..EU. = gsub(" kg$", "", Leergewicht..EU.),
          Leergewicht..EU. = as.numeric(Leergewicht..EU.)) %>% 
   rename(Leergewicht..EU.in.kg = Leergewicht..EU.)
+
+# C02.Ausstoß zum ADAC-Ecotest Wert transfomieren und zu numeric machen
+data <- data %>% 
+  mutate(C02.Ausstoß = gsub("n.b.", "-", C02.Ausstoß),
+         C02.Ausstoß = gsub(" g pro km\\(.*\\)", "", C02.Ausstoß),
+         C02.Ausstoß = gsub("[[:digit:]-]+ / ", "", C02.Ausstoß),
+         C02.Ausstoß = as.numeric(C02.Ausstoß)) %>% 
+  rename(CO2.ADAC.Test = C02.Ausstoß)
 ```
 
 #### Marke
@@ -184,6 +192,8 @@ data %>%
     y = "relative Häufigkeit"
   )
 ```
+Man erkennt, dass es insgesamt noch mehr Autos mit Verbrennermotor gibt, die getestet wurden.
+Man kann auch erkennen, dass es seit ca. 2018 eine starke relative Steigerung der Elektro/Gas Autos gibt, die vom ADAC getestet wurden.
 
 #### Leistung in PS und Baureihenstart, CO2-Ausstoß, Motorart
 
@@ -282,6 +292,11 @@ data %>%
     color = "Motorart"
   )
 ```
+Man erkennt, dass die PS mit der Zeit immer weiter gestiegen ist.
+Zudem erkennt man , dass es bei ca. 300 PS keine lineare Steigung des CO2-Ausstoßes im Vergleich mit der PS gibt.
+Man erkennt auch, dass seit ca. 2015, die getesteten Elektro/Gas Autos einen sehr starken PS Anstieg haben.
+Zudem kann man erkennen, dass der Abfall des CO2-Ausstoßes bei Autos mit 300< PS am größten ist.
+Man erkennt auch, dass seit ca. 2012 das Leistungsgewicht bei den getesteten Elektro/Gas Autos stark gesunklen ist.
 
 #### Hubraumgröße und Modellstart, CO2-Ausstoß, Treibstoffverbrauch
 
@@ -343,4 +358,39 @@ data %>%
   ) +
   scale_color_discrete(labels = c("<1500", "1500-2000", "2000-3000", "3000<"))
 ```
+Man erkennt, dass die durschnittliche Hubraumgröße über die Zeit gesunken ist.
+Man sieht, dass der CO2-Ausstoß im Vergleich mit der Hubraumgröße nicht linear ist und bei ca. 2200 ccm nicht mehr so stark ansteigt.
+Man kann auch ungefähr dasselbe beim Treibstoffverbrauch erkennen.
 
+#### CO2-Ausstoß ADAC-Ecotest Daten mit Herstellerangeben vergleichen
+
+```{r}
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Verhältnis = CO2.ADAC.Test / CO2.Ausstoß_g.pro.km) %>% 
+  ggplot(aes(x = CO2.Verhältnis)) +
+  geom_density() +
+  geom_vline(xintercept = 1, color = "red") +
+  labs(
+    title = "Verteilung vom Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe",
+    x = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
+  )
+
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Baureihenstart
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Verhältnis = CO2.ADAC.Test / CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% 
+  mutate(CO2.Verhältnis = mean(CO2.Verhältnis)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Verhältnis)) +
+  geom_line() +
+  labs(
+    title = "Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Baureihenstart",
+    y = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
+  )
+```
+Man erkennt, dass die meisten getesteten Autos mehr CO2 ausstoßen, als der Hersteller angibt. (Meistens nur knapp über 1)
+Man erkennt, dass es mit der Zeit einen Anstieg des Verhältnisses gab, vorallem seit ca. 2017, bei den getesteten Autos. Also die Angaben der Hersteller werden immer "falscher".

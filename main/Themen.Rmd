@@ -331,7 +331,7 @@ Anschauen mit: Höchstgescwindigkeit und Verbrauch
 
 Thema 7
 
-CO2.Ausstoß: Gibt den Vergleich zwischen dem CO2-Ausstoß nach Herstellerangabe und dem ADAC Ecotest an.
+C02.Ausstoß: Gibt den Vergleich zwischen dem CO2-Ausstoß nach Herstellerangabe und dem ADAC Ecotest an.
 Anschauen mit: Verhältnis zwischen angaben und realität (Diesel skandal sichtbar ?), Top X Marken oder deutsch ausländisch etc., Fahrzeugklasse
 +
 Verbrauch: Gibt den Vergleich zwischen dem Verbrauch nach Herstellerangabe und dem ADAC Ecotest an.
