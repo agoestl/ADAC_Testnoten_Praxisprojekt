@@ -68,25 +68,27 @@ data %>% filter(deutscher.Hersteller != "deutsch") %>% select(Marke) %>% count(M
 data %>% filter(deutscher.Hersteller == "deutsch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_deutsche_Marken
 top_weltweit_marken <- c(top_ausländische_Marken, top_deutsche_Marken)
 
-#top n marken aus Europa / nicht Europa 
+#top n marken aus Europa 
 marke_Europa <- c("Mercedes-Benz", "MINI", "Opel", "Peugeot", "Renault", "SEAT", "Porsche", "Rover", "Skoda", "smart", 
                   "Alfa Romeo", "ALPINA", "Audi", "BMW", "Citroen", "CUPRA", "Dacia", "DS Automobiles", "Fiat", "Maserati",
                   "Volvo", "VW", "VW Nutzfahrzeuge")
 
+# Spalten erstellen mit europäisch / nicht europäisch
 data <- data %>% 
   mutate(europäischer.Hersteller = Marke %in% marke_Europa,
          europäischer.Hersteller = ifelse(europäischer.Hersteller, "europäisch", "nicht europäisch"))
 
+# top marken eu / nicht eu 
 data %>% filter(europäischer.Hersteller != "europäisch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_nicht_europäische_Marken
 data %>% filter(europäischer.Hersteller == "europäisch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_europäische_Marken
-eu_marken <- c(top_europäische_Marken, top_nicht_europäische_Marken)
+eu_nicht_eu_marken <- c(top_europäische_Marken, top_nicht_europäische_Marken)
 
-# remove Euro 
+# remove Euro + set as numeric für Grundpreis
 data <- data %>% 
   mutate(Grundpreis = gsub(" Euro$", "", Grundpreis)) %>% 
   mutate(Grundpreis = as.numeric(Grundpreis))
-
-# remove Euro + set as numeric
+ 
+# remove Euro + set as numeric für Laufende Kosten
 data <- data %>% mutate(Betriebskosten = gsub(" €$", "", Betriebskosten)) %>%
   mutate(Fixkosten = gsub(" €$", "", Fixkosten)) %>%
   mutate(Werkstattkosten = gsub(" €$", "", Werkstattkosten)) %>% 
@@ -100,7 +102,7 @@ data <- data %>% mutate(Betriebskosten = gsub(" €$", "", Betriebskosten)) %>%
   mutate(Haftpflichtbeitrag.100. = as.numeric(Haftpflichtbeitrag.100.)) %>% 
   mutate(Wertverlust = as.numeric(Wertverlust))
 
-# remove mm + set as numeric
+# remove mm + set as numeric für Größe 
 
 data <- data %>% mutate(Länge = gsub(" mm$", "", Länge)) %>%
                  mutate(Breite = gsub(" mm$", "", Breite)) %>%
@@ -110,7 +112,6 @@ data <- data %>% mutate(Länge = gsub(" mm$", "", Länge)) %>%
                  mutate(Breite = as.numeric(Breite))
 
 interssante_Karosserie <- c("Coupe", "Bus", "Van", "Kombi", "Schrägheck", "SUV")
-
 ```
 
 
@@ -137,7 +138,7 @@ data %>%
 
 # Vergleich zwischen europäischen und nicht europäischen Marken 
 
-data %>% filter(Marke %in% eu_marken ) %>% 
+data %>% filter(Marke %in% eu_nicht_eu_marken ) %>% 
   group_by(Marke, Baureihenstart) %>%
   mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
   ggplot(aes(x = Baureihenstart, y = Prize_average, color = Marke)) +
@@ -147,7 +148,7 @@ data %>% filter(Marke %in% eu_marken ) %>%
      y = "Durchschnittspreis in €")
 
 # Grundpreis pro Marke für CO2-Effizienzklassen 
-data %>% filter(Marke %in% eu_marken ) %>% 
+data %>% filter(Marke %in% eu_nicht_eu_marken ) %>% 
   filter(!is.na(CO2.Effizienzklasse)) %>%
   ggplot(aes(x = CO2.Effizienzklasse, y = Grundpreis, fill = Marke)) +
   stat_summary(fun = "mean", geom = "bar", position = "dodge") +
@@ -207,7 +208,7 @@ Karosserieform
 Anschauen mit: Höchstgescwindigkeit und Verbrauch
 ```{r}
 # Größe des Autos im Vergleich zur Zeit  
-data %>% filter(Marke %in% eu_marken) %>% 
+data %>% filter(Marke %in% eu_nicht_eu_marken) %>% 
   group_by(Marke, Baureihenstart) %>% 
   mutate(Volumen = (Länge * Breite * Höhe) / 1000000) %>% 
   ggplot(aes(x = Baureihenstart, y = Volumen, color = Marke)) + 
@@ -280,7 +281,7 @@ data <- data %>% mutate(Deutschlandweit.betroffene.Fahrzeuge = str_extract(Anzah
                         Weltweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "(?<=\\)\\s)\\d+\\.\\d+"))
 
 # Anzahl der mangelhaften Modelle pro Jahr
-data %>% filter(Marke %in% eu_marken) %>% 
+data %>% filter(Marke %in% eu_nicht_eu_marken) %>% 
   group_by(Marke, Baureihenstart) %>% 
   mutate(sum_Fehler = sum(Fehler_ja_nein)) %>%
   ggplot(aes(x = Baureihenstart, y = sum_Fehler, color = Marke)) + 
