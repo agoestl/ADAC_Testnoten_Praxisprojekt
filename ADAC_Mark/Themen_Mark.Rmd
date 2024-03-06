@@ -1,0 +1,71 @@
+
+```{r}
+data <- read.csv("cleandedData.csv")
+```
+
+
+```{r Packages}
+library(tidyverse)
+```
+
+Thema 1
+
+Formatieren:
+```{r}
+# Baureihenstart zu Date umformatieren
+data <- data %>% 
+  mutate(Baureihenstart = as.Date(paste("01/", Baureihenstart, sep = ""), "%d/%m/%y"))
+
+# CO2-Ausstoß Spalte zu numeric machen
+data <- data %>% 
+  mutate(CO2.Wert..NEFZ. = gsub(" g/km", "", CO2.Wert..NEFZ.),
+         CO2.Wert..NEFZ. = as.numeric(CO2.Wert..NEFZ.)) %>% 
+  rename(CO2.Ausstoß_g.pro.km = CO2.Wert..NEFZ.)
+
+# Fahrzeugklasse Beispiel entfernen
+data <- data %>% 
+  mutate(Fahrzeugklasse = gsub(" +\\(.*\\)", "", Fahrzeugklasse))
+
+#Leistung.in.kW ergänzen
+data$Leistung.in.kW <- gsub(" kW", "", data$Leistung)
+```
+
+
+
+
+CO2-Effizienzklasse: Gibt die CO2-Effizienzklasse des Autos an.
+Anschauen mit: Modellstart, Leistung
+
+relative Verteilung der Effiziensklassen über die Zeit (Abgasskandal 2015)
+```{r}
+data %>% group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  mutate(Anzahl.Jahr = n()) %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), CO2.Effizienzklasse) %>%
+  mutate(Anzahl.Jahr.CO2.Effizienzklasse = n()) %>%
+  mutate(relativ.CO2.Effizienzklasse = Anzahl.Jahr.CO2.Effizienzklasse / Anzahl.Jahr) %>%   
+  ggplot(aes(x = Baureihenstart, y = relativ.CO2.Effizienzklasse, color = CO2.Effizienzklasse)) + 
+  geom_line() + 
+  labs(title = "Effiziensklassenverteilung", x = "Baureihenstart", y = "relative Häufigkeiten", color = "CO2.Effizienzklasse")
+```
+
+
+relative Verteilung der Effizienzklassen über Leistung.in.kW
+```{r}
+
+```
+
+CO2.Ausstoß_g.pro.km: Gibt CO2 Austoß pro km in gramm an
+Anschauen mit: Modellstart, Leistung
+
+CO2.Ausstoß_g.pro.km über die Zeit
+```{r}
+
+```
+
+
+CO2.Ausstoß_g.pro.km über Leistung.in.kW
+```{r}
+
+```
+
+Thema 2
