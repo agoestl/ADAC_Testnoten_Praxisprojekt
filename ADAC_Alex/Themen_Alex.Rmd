@@ -153,20 +153,12 @@ data %>%
   geom_smooth(method = "loess", span = 0.7, se = FALSE) + 
   labs(title = "Laufendekosten pro Motorart", x = "Zeit", y = "Laufendekosten in €")
 
-# Wertverlust in Prozent über die Zeit 
-data %>% 
-  group_by(Motorart, Baureihenstart) %>%
-  mutate(Wertverlust_prozent = Grundpreis/Wertverlust) %>% 
-  ggplot(aes(x = Baureihenstart, y = Wertverlust_prozent, color = Motorart)) +
-  geom_line() + 
-  labs(title = "Wertverlust pro Motorart in Prozent", x = "Zeit", y = "Wertverlust in Prozent")
-
 # relative Laufende kosten im vergleich mit fahrzeugsklasse
 data %>% 
   mutate(Laufendekosten = sum(c(Betriebskosten, Werkstattkosten, Fixkosten, KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen., Haftpflichtbeitrag.100.), na.rm = TRUE)) %>% 
-  ggplot(aes(x = Fahrzeugklasse, y = Laufendekosten, color = Laufendekosten)) +
+  ggplot(aes(x = Motorart, y = Laufendekosten, color = Laufendekosten)) +
   geom_col() + 
-  labs(title = "relativ Laufende Kosten der verschiedenen Fahrzeugklassen", x = "Fahrzeugklassen", y = "Laufendekosten in € (anteilsmäßig)")
+  labs(title = "relativ Laufende Kosten der verschiedenen Motorarten", x = "Motorart", y = "Laufendekosten in € (anteilsmäßig)")
 
 ```
 
