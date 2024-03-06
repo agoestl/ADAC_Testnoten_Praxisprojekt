@@ -6,6 +6,8 @@ data <- read.csv("cleandedData.csv")
 
 ```{r Packages}
 library(tidyverse)
+library(ggplot2)
+library(dplyr)
 ```
 
 Thema 1
@@ -28,15 +30,20 @@ data <- data %>%
 
 #Leistung.in.kW ergänzen
 data$Leistung.in.kW <- gsub(" kW", "", data$Leistung)
+data$Leistung.in.kW <- as.numeric(data$Leistung.in.kW)
+
+# Motorarten zusammenfassen (z.B. alle Hybridarten zu Hybrid)
+data <- data %>% 
+  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid", Motorart),
+         Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas")))
 ```
 
 
 
-
 CO2-Effizienzklasse: Gibt die CO2-Effizienzklasse des Autos an.
-Anschauen mit: Modellstart, Leistung
+Anschauen mit: Baureihenstart, Leistung
 
-relative Verteilung der Effiziensklassen über die Zeit (Abgasskandal 2015)
+relative Verteilung der Effizienzklassen über die Zeit (Abgasskandal 2015)
 ```{r}
 data %>% group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
   mutate(Anzahl.Jahr = n()) %>%
@@ -45,27 +52,162 @@ data %>% group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>
   mutate(relativ.CO2.Effizienzklasse = Anzahl.Jahr.CO2.Effizienzklasse / Anzahl.Jahr) %>%   
   ggplot(aes(x = Baureihenstart, y = relativ.CO2.Effizienzklasse, color = CO2.Effizienzklasse)) + 
   geom_line() + 
-  labs(title = "Effiziensklassenverteilung", x = "Baureihenstart", y = "relative Häufigkeiten", color = "CO2.Effizienzklasse")
+  labs(title = "Effizienzklassenverteilung", x = "Baureihenstart", y = "relative Häufigkeiten", color = "CO2.Effizienzklasse")
 ```
 
 
-relative Verteilung der Effizienzklassen über Leistung.in.kW
+Leistung über Zeit in Effizienzklassenverteilung
 ```{r}
+data %>% group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  mutate(Anzahl.Jahr = n()) %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), CO2.Effizienzklasse) %>%
+  drop_na(Leistung.in.kW) %>% 
+  mutate(Leistung.in.kW = mean(Leistung.in.kW)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Leistung.in.kW, color = CO2.Effizienzklasse)) + 
+  geom_line() + 
+  labs(title = "Leistung über Zeit in Effizienzklassenverteilung", x = "Baureihenstart", y = "Leistung in kW", color = "CO2.Effizienzklasse")
 
+avg_leistung <- data %>%
+  group_by(CO2.Effizienzklasse) %>%
+  summarise(avg_Leistung = mean(Leistung.in.kW, na.rm = TRUE))
+
+# Create bar plot
+ggplot(avg_leistung, aes(x = CO2.Effizienzklasse, y = avg_Leistung)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "CO2 Effizienzklasse", y = "Average Leistung in kW") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 CO2.Ausstoß_g.pro.km: Gibt CO2 Austoß pro km in gramm an
-Anschauen mit: Modellstart, Leistung
+Anschauen mit: Baureihenstart, Leistung
 
-CO2.Ausstoß_g.pro.km über die Zeit
 ```{r}
+# Allgemeine Entwicklung  (zeitliche Entwicklung)
+data %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% # Vllt. ohne floor_date, aber dann geom_line mit geom_point ersetzen
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß)) +
+  geom_line() + 
+  labs(
+    title = "Allgemeine Entwicklung des CO2-Ausstoßes",
+    y = "CO2-Ausstoß in g/km"
+  )
 
+# Entwicklung pro Fahrzeugklasse (zeitliche Entwicklung)
+data %>% 
+  mutate(Fahrzeugklasse = gsub("Kleinstwagen|Microwagen", "Kleinwagen", Fahrzeugklasse)) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Fahrzeugklasse) %>% # Vllt. ohne floor_date, aber dann geom_line mit geom_point ersetzen
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Fahrzeugklasse)) +
+  geom_line() +
+  labs(
+    title = "Entwicklung des CO2-Ausstoßes nach Fahrzeugklassen",
+    y = "Durchschnittlicher CO2-Ausstoß in g/km"
+  )
 ```
-
 
 CO2.Ausstoß_g.pro.km über Leistung.in.kW
 ```{r}
+data %>% 
+  group_by(Leistung.in.kW) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  summarise(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Leistung.in.kW, y = CO2.Ausstoß)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "CO2-Ausstoß nach Leistung in kW",
+    x = "kW",
+    y = "CO2-Ausstoß in g/km"
+  )
 
+data %>% 
+  group_by(Leistung.in.kW) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  summarise(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Leistung.in.kW, y = CO2.Ausstoß)) +
+  geom_line() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "CO2-Ausstoß nach Leistung in kW",
+    x = "kW",
+    y = "CO2-Ausstoß in g/km"
+  )
+```
+
+CO2-Ausstoß nach Baureihenstart gruppiert nach Leistung in PS für Verbrenner
+```{r}
+data %>% 
+  filter(Motorart == "Verbrenner") %>% 
+  mutate(Leistung.maximal.in.PS..Systemleistung. = cut(Leistung.maximal.in.PS..Systemleistung.,
+                                                       breaks = c(0, 120, 180, 300, Inf))) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Leistung.maximal.in.PS..Systemleistung.) %>% 
+  mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Leistung.maximal.in.PS..Systemleistung.)) +
+  geom_line() +
+  labs(
+    title = "CO2-Ausstoß nach Baureihenstart gruppiert nach Leistung in PS (Verbrennermotor)",
+    y = "CO2-Ausstoß in g/km",
+    color = "PS"
+  ) +
+  scale_color_discrete(labels = c("<120", "120-180", "180-300", "300<"))
 ```
 
 Thema 2
+
+Aufbereiten der Daten
+```{r}
+#Ladezeiten für 100% auswählen
+
+#Batteriekapazität Netto zu numeric
+data <- data %>% 
+  mutate(Batteriekapazität..Netto..in.kWh = gsub(",", ".", Batteriekapazität..Netto..in.kWh),
+         Batteriekapazität..Netto..in.kWh = as.numeric(Batteriekapazität..Netto..in.kWh)) 
+
+#Reichweite.WLTP..elektrisch.
+data <- data %>% 
+  mutate(Reichweite.WLTP..elektrisch. = gsub(" km", "", Reichweite.WLTP..elektrisch.),
+         Reichweite.WLTP..elektrisch. = as.numeric(Reichweite.WLTP..elektrisch.)) %>% 
+  rename(Reichweite_elektisch_in.km = Reichweite.WLTP..elektrisch.)
+
+#Reichweite Verbrenner:
+#Verbrauch.Gesamt..NEFZ. (l/100 km) nach Verbrenner filtern
+#Tankgröße
+# R = T/(v/100)
+```
+
+Ladezeiten
+```{r}
+#Mit Barreriekapazität
+
+#Durchschnittliche Ladezeit pro Jahr nach Baureihenstart
+
+#Durchschnittliche Durchschnittliche Ladezeit nach Marke
+```
+
+Reichweite
+```{r}
+#Reichweite mit Batteriekapazität
+
+#Durchschnittliche Reichweite pro Jahr mit Baureihenstart
+
+#Durchschnittliche Reichweite nach Marke
+
+#Durchschnittliche Reichweite pro Jahr mit Baureihenstart nach Marke ??
+
+#Durchschnittliche Reichweite pro Jahr mit Baureihenstart verglichen mit Verbrennern
+```
+
+Batteriekapazität
+```{r}
+#Batteriekapazität nach Baureihenstart
+
+#Batteriekapazität nach Marke
+```
+
+
+
