@@ -1,0 +1,248 @@
+
+```{r packages}
+library(tidyverse)
+```
+
+```{r Daten für Grafiken anpassen}
+data <- read.csv("cleandedData.csv")
+
+# Nur deutsche Automarken ohne ausländische Marken, die deutschen Herstellern gehören (z.B. MINI, Skoda, etc.)
+deutscheMarken <- c("Mercedes-Benz", "Opel", "Porsche", "smart", "ALPINA", "Audi", "BMW", "VW", "VW Nutzfahrzeuge")
+
+# Spalte für deutsch/ausländisch erstellen
+data <- data %>% 
+  mutate(deutscher.Hersteller = Marke %in% deutscheMarken,
+         deutscher.Hersteller = ifelse(deutscher.Hersteller, "deutsch", "ausländisch"))
+
+# CO2-Ausstoß Spalte zu numeric machen
+data <- data %>% 
+  mutate(CO2.Wert..NEFZ. = gsub(" g/km", "", CO2.Wert..NEFZ.),
+         CO2.Wert..NEFZ. = as.numeric(CO2.Wert..NEFZ.)) %>% 
+  rename(CO2.Ausstoß_g.pro.km = CO2.Wert..NEFZ.)
+
+# Baureihenstart zu Date umformatieren
+data <- data %>% 
+  mutate(Baureihenstart = as.Date(paste("01/", Baureihenstart, sep = ""), "%d/%m/%y"))
+
+# Fahrzeugklasse Beispiel entfernen
+data <- data %>% 
+  mutate(Fahrzeugklasse = gsub(" +\\(.*\\)", "", Fahrzeugklasse))
+
+# Motorarten zusammenfassen (z.B. alle Hybridarten zu Hybrid)
+data <- data %>% 
+  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid", Motorart),
+         Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas")))
+  
+
+# Hubraum..Verbrennungsmotor. zu numeric machen
+data <- data %>% 
+  mutate(Hubraum..Verbrennungsmotor. = gsub(" ccm", "", Hubraum..Verbrennungsmotor.),
+         Hubraum..Verbrennungsmotor. = as.numeric(Hubraum..Verbrennungsmotor.)) %>% 
+  rename(Hubraumgröße = Hubraum..Verbrennungsmotor.)
+
+# Verbrauch.Gesamt..NEFZ. zu numeric machen
+data <- data %>% 
+  mutate(Verbrauch.Gesamt..NEFZ. = gsub(" l/100 km| kWh/100 km| kg/100 km", "", Verbrauch.Gesamt..NEFZ.),
+         Verbrauch.Gesamt..NEFZ. = gsub(",", ".", Verbrauch.Gesamt..NEFZ.),
+         Verbrauch.Gesamt..NEFZ. = as.numeric(Verbrauch.Gesamt..NEFZ.)) %>% 
+  rename(Verbrauch.gesamt.in.l.kg.kWh_100Km = Verbrauch.Gesamt..NEFZ.)
+
+# Leergewicht..EU. zu. numeric machen
+data <- data %>%
+  mutate(Leergewicht..EU. = gsub(" kg$", "", Leergewicht..EU.),
+         Leergewicht..EU. = as.numeric(Leergewicht..EU.)) %>% 
+  rename(Leergewicht..EU.in.kg = Leergewicht..EU.)
+```
+
+
+top n marken rausfiltern 
+```{r}
+data %>%
+  count(Marke) %>%
+  top_n(5, n) %>%
+  pull(Marke) -> top_Marken
+```
+
+top n marken deutsch / ausländisch + kombiniert
+
+```{r}
+data %>% filter(deutscher.Hersteller != "deutsch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_ausländische_Marken
+data %>% filter(deutscher.Hersteller == "deutsch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_deutsche_Marken
+top_weltweit_marken <- c(top_ausländische_Marken, top_deutsche_Marken)
+```
+
+
+top n marken aus Europa / nicht Europa 
+
+```{r}
+marke_Europa <- c("Mercedes-Benz", "MINI", "Opel", "Peugeot", "Renault", "SEAT", "Porsche", "Rover", "Skoda", "smart", 
+                  "Alfa Romeo", "ALPINA", "Audi", "BMW", "Citroen", "CUPRA", "Dacia", "DS Automobiles", "Fiat", "Maserati",
+                  "Volvo", "VW", "VW Nutzfahrzeuge")
+
+data <- data %>% 
+  mutate(europäischer.Hersteller = Marke %in% marke_Europa,
+         europäischer.Hersteller = ifelse(europäischer.Hersteller, "europäisch", "nicht europäisch"))
+
+data %>% filter(europäischer.Hersteller != "europäisch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_nicht_europäische_Marken
+data %>% filter(europäischer.Hersteller == "europäisch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_europäische_Marken
+eu_marken <- c(top_europäische_Marken, top_nicht_europäische_Marken)
+```
+
+
+
+------------------------------------------------------------------
+
+Thema 2
+
+Grundpreis: Gibt den Preis des Autos in Euro an. (gibt ne seperate Note/ Punkte für den Preis/Kosten)
+Anschauen mit: Baureihenstart 
+Laufende Kosten: Baureihenstart (Weltfinanzkrise 2007/8) (Eurokrise - deutsche/ausländische vergleichen wegen Auswirkungen)
+```{r}
+#durschnittlicher Grundpreis über die Zeit (Inflation ?) + Weltfinanzkrise 2007/8 + Eurokrise 2010
+
+# remove Euro 
+data <- data %>% 
+  mutate(Grundpreis = gsub(" Euro$", "", Grundpreis)) %>% 
+  mutate(Grundpreis = as.numeric(Grundpreis))
+
+# der durschnittspreis  über der Zeit der top marken 
+data %>% filter(Marke %in% top_Marken) %>% 
+  group_by(Marke, Baureihenstart) %>%
+  mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Prize_average, color = Marke)) +
+  geom_point() +
+  geom_smooth(method = "loess", span = 0.4, se = FALSE) + labs(title = "Durchschnittspreis pro Automarke über die Zeit", x = "Zeit", y = "Durchschnittspreis in €", color = "Marke")
+
+# der durschnittspreis  über der Zeit der Fahrzeugklassen
+data %>% 
+  group_by(Fahrzeugklasse, Baureihenstart) %>%
+  mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Prize_average, color = Fahrzeugklasse)) +
+  geom_smooth(method = "loess", span = 0.4, se = FALSE) + labs(title = "Durchschnittspreis pro Fahrzeugklasse über die Zeit", x = "Zeit", y = "Durchschnittspreis in €", color = "Fahrzeugklasse")
+
+# Vergleich zwischen europäischen und nicht europäischen Marken (Dieselkrise wird deutlicher etc.)
+
+data %>% filter(Marke %in% eu_marken ) %>% 
+  group_by(Marke, Baureihenstart) %>%
+  mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Prize_average, color = Marke)) +
+  geom_smooth(method = "loess", span = 0.4, se = FALSE) + labs(title = "Durchschnittspreis pro Automarke über die Zeit", x = "Zeit", y = "Durchschnittspreis in €")
+
+### Laufende Kosten 
+
+
+#remove Euro + set as numeric
+data <- data %>% mutate(Betriebskosten = gsub(" €$", "", Betriebskosten)) %>%
+  mutate(Fixkosten = gsub(" €$", "", Fixkosten)) %>%
+  mutate(Werkstattkosten = gsub(" €$", "", Werkstattkosten)) %>% 
+  mutate(KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen. = gsub(" Euro$", "", KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen.)) %>%
+  mutate(Wertverlust = gsub(" €$", "", Wertverlust)) %>%
+  mutate(Haftpflichtbeitrag.100. = gsub("€$", "", Haftpflichtbeitrag.100.)) %>%
+  mutate(Betriebskosten = as.numeric(Betriebskosten)) %>% 
+  mutate(Fixkosten = as.numeric(Fixkosten)) %>% 
+  mutate(Werkstattkosten = as.numeric(Werkstattkosten)) %>% 
+  mutate(KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen. = as.numeric(KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen.)) %>% 
+  mutate(Haftpflichtbeitrag.100. = as.numeric(Haftpflichtbeitrag.100.)) %>% 
+  mutate(Wertverlust = as.numeric(Wertverlust))
+
+# ohne Wertverlust (da erst die letzten 2 Jahre erfasst) über die Zeit 
+data %>% 
+  group_by(Motorart, Baureihenstart) %>%
+  mutate(Laufendekosten = sum(c(Betriebskosten, Werkstattkosten, Fixkosten, KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen., Haftpflichtbeitrag.100.), na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Laufendekosten, color = Motorart)) +
+  geom_smooth(method = "loess", span = 0.7, se = FALSE) + 
+  labs(title = "Laufendekosten pro Motorart", x = "Zeit", y = "Laufendekosten in €")
+
+# Wertverlust in Prozent über die Zeit 
+data %>% 
+  group_by(Motorart, Baureihenstart) %>%
+  mutate(Wertverlust_prozent = Grundpreis/Wertverlust) %>% 
+  ggplot(aes(x = Baureihenstart, y = Wertverlust_prozent, color = Motorart)) +
+  geom_line() + 
+  labs(title = "Wertverlust pro Motorart in Prozent", x = "Zeit", y = "Wertverlust in Prozent")
+
+# relative Laufende kosten im vergleich mit fahrzeugsklasse
+data %>% 
+  mutate(Laufendekosten = sum(c(Betriebskosten, Werkstattkosten, Fixkosten, KFZ.Steuer.ohne.Befreiung.Jahr..kann.durch.WLTP.abweichen., Haftpflichtbeitrag.100.), na.rm = TRUE)) %>% 
+  ggplot(aes(x = Fahrzeugklasse, y = Laufendekosten, color = Laufendekosten)) +
+  geom_col() + 
+  labs(title = "relativ Laufende Kosten der verschiedenen Fahrzeugklassen", x = "Fahrzeugklassen", y = "Laufendekosten in € (anteilsmäßig)")
+
+```
+
+------------------------------------------------------------------
+
+Thema 6
+
+Länge, Breite, Höhe -> Größe/Volumen: Gibt das Volumen des Autos in mm^3/m^3 an.
+Anschauen mit: Modellstart (Autos werden immer größer), CO2-Ausstoß, PS, Treibstoffverbrauch 
++
+Leergewicht..EU.: Gibt das Leergewicht des Autos in kg an.
+Anschauen mit: Verbrauch, Modellstart, CO2-Effizienzklasse, CO2-Ausstoß
++
+Karosserieform
+Anschauen mit: Höchstgescwindigkeit und Verbrauch
+```{r}
+# größe des Autos im Vergleich zum Baureihenstart  
+
+# remove mm and make it numeric
+
+data <- data %>% mutate(Länge = gsub(" mm$", "", Länge)) %>%
+                 mutate(Breite = gsub(" mm$", "", Breite)) %>%
+                 mutate(Höhe = gsub(" mm$", "", Höhe)) %>% 
+                 mutate(Länge = as.numeric(Länge)) %>% 
+                 mutate(Höhe = as.numeric(Höhe)) %>% 
+                 mutate(Breite = as.numeric(Breite))
+
+data %>% filter(Marke %in% top_Marken) %>% 
+  group_by(Marke, Baureihenstart) %>% 
+  mutate(Volumen = (Länge * Breite * Höhe) / 1000000) %>% 
+  ggplot(aes(x = Baureihenstart, y = Volumen, color = Marke)) + 
+  geom_smooth(method = "loess", span = 0.4, se = FALSE, na.rm = TRUE) + 
+  labs(title = "Größe pro Zeit", x = "Baureihenstart", y = "Größe in liter", color = "Marke")
+
+
+#Verhältniss von Gewicht zu Leistung
+
+data <- data %>% mutate(Leergewicht..EU. = gsub(" kg$", "", Leergewicht..EU.)) %>% mutate(Leergewicht..EU. = as.numeric(Leergewicht..EU.))
+data %>% group_by(Motorart, Baureihenstart) %>% 
+  mutate(Verhältnis = Leergewicht..EU./Leistung.maximal.in.PS..Systemleistung.) %>% 
+  ggplot(aes(x = Baureihenstart, y = Verhältnis, color = Motorart)) + 
+  geom_smooth(method = "loess", span = 0.7, se = FALSE, na.rm = TRUE) + 
+  labs(title = "Leistungsgewicht in kg/PS abhängig von Motorart", x = "Baureihenstart", y = "Leistungsgewicht in kg/PS", color = "Motorart")
+
+# Verhältniss Karosserie relativ zur Zeit
+data %>% group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  mutate(Anzahl.Jahr = n()) %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Karosserie) %>%
+  mutate(Anzahl.Jahr.Karosserie = n()) %>%
+  mutate(relativ.Karosserie = Anzahl.Jahr.Karosserie / Anzahl.Jahr) %>%   
+  ggplot(aes(x = Baureihenstart, y = relativ.Karosserie, color = Karosserie)) + 
+  geom_line() + 
+  labs(title = "relative Verteilung der Karosserie", x = "Baureihenstart", y = "relative Häufigkeiten", color = "Karosserieform")
+
+# Verhältniss Karosserievorm zu Verbrauch
+data %>% group_by(Karosserie, Verbrauch.gesamt.in.l.kg.kWh_100Km) %>%
+  mutate(Durschnittsverbrauch=mean(Verbrauch.gesamt.in.l.kg.kWh_100Km))
+  ggplot(aes(x = Karosserie, y = Durschnittsverbrauch)) + 
+  geom_col() + 
+  labs(title = "", x = "", y = "", color = "")
+  
+# Leergewicht zu CO2 Ausstoß 
+  
+data %>% mutate(Verhältniss = Leergewicht..EU.in.kg/CO2.Ausstoß_g.pro.km)%>% 
+  ggplot(aes(x = Baureihenstart, y = Verhältniss, color = Motorart)) + 
+  geom_point() + 
+  labs(title = "Verhältnis von Gewicht des Autos in kg zu g C02 Ausstoß", x = "Baureihenstart", y = "kg Gewicht / kg Ausstoß", color = "Motorart")  
+
+```
+
+------------------------------------------------------------------
+
+Thema 10
+
+Anlass : welcher Mängel aufgetreten ist 
+Zusammen mit Baureihenstart und Marke und Anzahl betroffener Fahrzeuge
+```{r}
+
+```
