@@ -1,1 +1,2 @@
-read.csv2("cleandedData.csv")
+read.csv("cleandedData.csv")
+
