@@ -88,6 +88,8 @@ data %>% filter(Marke %in% top_weltweit_marken) %>%
 größe des Autos im Vergleich zum Baureihenstart 
 
 ```{r}
+# größe des Autos im Vergleich zum Baureihenstart  
+
 # remove mm and make it numeric
 
 data <- data %>% mutate(Länge = gsub(" mm$", "", Länge)) %>%
