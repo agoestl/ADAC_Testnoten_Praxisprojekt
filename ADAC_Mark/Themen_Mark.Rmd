@@ -47,7 +47,8 @@ Anschauen mit: Baureihenstart, Leistung
 
 relative Verteilung der Effizienzklassen über die Zeit (Abgasskandal 2015)
 ```{r}
-data %>% group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+data %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
   mutate(Anzahl.Jahr = n()) %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), CO2.Effizienzklasse) %>%
   mutate(Anzahl.Jahr.CO2.Effizienzklasse = n()) %>%
