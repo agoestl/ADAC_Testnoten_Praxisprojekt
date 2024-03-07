@@ -34,8 +34,10 @@ data$Leistung.in.kW <- as.numeric(data$Leistung.in.kW)
 
 # Motorarten zusammenfassen (z.B. alle Hybridarten zu Hybrid)
 data <- data %>% 
-  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid", Motorart),
-         Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas")))
+  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid",
+                           ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner",
+                                  ifelse(grepl("Elektro", Motorart), "Elektro",
+                                         ifelse(grepl("Gas", Motorart), "Gas", "Andere")))))
 ```
 
 
@@ -49,6 +51,7 @@ data %>% group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>
   mutate(Anzahl.Jahr = n()) %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), CO2.Effizienzklasse) %>%
   mutate(Anzahl.Jahr.CO2.Effizienzklasse = n()) %>%
+  drop_na(CO2.Effizienzklasse) %>%
   mutate(relativ.CO2.Effizienzklasse = Anzahl.Jahr.CO2.Effizienzklasse / Anzahl.Jahr) %>%   
   ggplot(aes(x = Baureihenstart, y = relativ.CO2.Effizienzklasse, color = CO2.Effizienzklasse)) + 
   geom_line() + 
@@ -157,7 +160,7 @@ data %>%
   scale_color_discrete(labels = c("<120", "120-180", "180-300", "300<"))
 ```
 
-Thema 2
+Thema 8
 
 Aufbereiten der Daten
 ```{r}
@@ -178,6 +181,19 @@ data <- data %>%
 #Verbrauch.Gesamt..NEFZ. (l/100 km) nach Verbrenner filtern
 #Tankgröße
 # R = T/(v/100)
+data2 <- data %>%
+  mutate(Tankgröße = gsub(" l", "", Tankgröße),
+         Tankgröße = gsub(",", ".", Tankgröße),
+         Tankgröße = as.numeric(Tankgröße),
+         Verbrauch.Gesamt..NEFZ. = gsub(",", ".", Verbrauch.Gesamt..NEFZ.),
+         Verbrauch.Gesamt..NEFZ. = gsub(" l/100 km", "", Verbrauch.Gesamt..NEFZ.),
+         Verbrauch.Gesamt..NEFZ. = as.numeric(Verbrauch.Gesamt..NEFZ.)
+         ) 
+Verbrauch_pro_km <- data2$Verbrauch.Gesamt..NEFZ. / 100
+data2$Reichweite <- data2$Tankgröße/Verbrauch_pro_km
+
+#joined collumn
+data2$Reichweite.Gesamt <- coalesce(data2$Reichweite_elektisch_in.km, data2$Reichweite)
 ```
 
 Ladezeiten
@@ -192,21 +208,121 @@ Ladezeiten
 Reichweite
 ```{r}
 #Reichweite mit Batteriekapazität
+data %>%
+  filter(Motorart == "Elektro") %>%
+  group_by(Batteriekapazität..Netto..in.kWh) %>% 
+  drop_na(Reichweite_elektisch_in.km) %>% 
+  summarise(Reichweite_elektisch_in.km_mean = mean(Reichweite_elektisch_in.km)) %>% 
+  ggplot(aes(x = Batteriekapazität..Netto..in.kWh, y = Reichweite_elektisch_in.km_mean)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Reichweite nach Batterienkapazität von Elektromotoren",
+    x = "Battarienkapazität",
+    y = "Recihweite in km"
+  )
 
 #Durchschnittliche Reichweite pro Jahr mit Baureihenstart
-
+data %>% 
+  filter(Motorart == "Elektro") %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  drop_na(Reichweite_elektisch_in.km) %>% 
+  mutate(Reichweite_elektisch_in.km_mean = mean(Reichweite_elektisch_in.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Reichweite_elektisch_in.km_mean)) +
+  geom_line() + 
+  labs(
+    title = "Entwicklung der durchschnittlichen Reichweite von Elektromotoren",
+    y = "Reichweite des Autos in km"
+  )
 #Durchschnittliche Reichweite nach Marke
+avg_Reichweite_E_Motor <- data %>%
+  filter(Motorart == "Elektro") %>%
+  group_by(Marke) %>%
+  summarise(avg_Reichweite_E_Motor = mean(Reichweite_elektisch_in.km, na.rm = TRUE))
 
+avg_Reichweite_E_Motor <- drop_na(avg_Reichweite_E_Motor)
+
+ggplot(avg_Reichweite_E_Motor, aes(x = Marke, y = avg_Reichweite_E_Motor)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "Marke", y = "Durchschnittliche Reichweite", title = "Durschnittliche Reichweite der E-Motoren nach Marke") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+data %>% 
+  filter(Motorart == "Elektro") %>%
+  drop_na(Reichweite_elektisch_in.km) %>% 
+ggplot(aes(x = Marke, y = Reichweite_elektisch_in.km)) +
+  geom_bar(position='dodge', stat='summary', fun='mean') +
+  geom_text(aes(label=..count..), y=0, stat='count', colour="red", size=4) +
+  labs(x = "Marke", y = "Durchschnittliche Reichweite", title = "Durschnittliche Reichweite der E-Motoren nach Marke") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 #Durchschnittliche Reichweite pro Jahr mit Baureihenstart nach Marke ??
+data %>% 
+  filter(Motorart == "Elektro") %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  mutate(Anzahl.Jahr = n()) %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Marke) %>%
+  drop_na(Reichweite_elektisch_in.km) %>% 
+  mutate(Reichweite_elektisch_in.km_mean = mean(Reichweite_elektisch_in.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Reichweite_elektisch_in.km_mean, color = Marke)) + 
+  geom_line() + 
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(title = "Reichweite über Zeit der E-Motoren nach Marke", x = "Baureihenstart", y = "Reichweite", color = "Marke")
+#für spezifsiche Marken: 
+brands <- c("NIO", "MINI", "Opel", "BMW")
+data %>%
+  filter(Motorart == "Elektro", Marke %in% brands) %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  mutate(Anzahl.Jahr = n()) %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Marke) %>%
+  drop_na(Reichweite_elektisch_in.km) %>% 
+  mutate(Reichweite_elektisch_in.km_mean = mean(Reichweite_elektisch_in.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Reichweite_elektisch_in.km_mean, color = Marke)) + 
+  geom_point() + 
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(title = "Reichweite über Zeit der E-Motoren nach spezifischen Marken", x = "Baureihenstart", y = "Reichweite", color = "Marke")
 
 #Durchschnittliche Reichweite pro Jahr mit Baureihenstart verglichen mit Verbrennern
+data2 %>% 
+  filter(Motorart == c("Verbrenner", "Elektro")) %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>%
+  drop_na(Reichweite.Gesamt) %>% 
+  mutate(Reichweite.Gesamt_mean = mean(Reichweite.Gesamt)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Reichweite.Gesamt_mean, color = Motorart)) +
+  geom_line() + 
+  labs(
+    title = "Entwicklung der durchschnittlichen Reichweite von Elektromotoren vs Verbrenner",
+    y = "Reichweite des Autos in km"
+  )
+
 ```
 
 Batteriekapazität
 ```{r}
 #Batteriekapazität nach Baureihenstart
+data %>% 
+  filter(Motorart == "Elektro") %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% # Vllt. ohne floor_date, aber dann geom_line mit geom_point ersetzen
+  drop_na(Batteriekapazität..Netto..in.kWh) %>% 
+  mutate(Batteriekapazität..Netto..in.kWh_mean = mean(Batteriekapazität..Netto..in.kWh)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Batteriekapazität..Netto..in.kWh_mean)) +
+  geom_line() + 
+  labs(
+    title = "Entwicklung der durchschnittlichen Batteriekapazität in kWh pro Jahr von Elektromotoren",
+    y = "Batteriekapazität in kWh"
+  )
 
 #Batteriekapazität nach Marke
+data %>% 
+  filter(Motorart == "Elektro") %>%
+  drop_na(Batteriekapazität..Netto..in.kWh) %>% 
+ggplot(aes(x = Marke, y = Batteriekapazität..Netto..in.kWh)) +
+  geom_bar(position='dodge', stat='summary', fun='mean') +
+  geom_text(aes(label=..count..), y=0, stat='count', colour="red", size=4) +
+  labs(x = "Marke", y = "Durchschnittliche Batterienkapazität", title = "Durschnittliche Batterienkapazität der E-Motoren nach Marke") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 
