@@ -285,7 +285,7 @@ data %>%
 
 #Durchschnittliche Reichweite pro Jahr mit Baureihenstart verglichen mit Verbrennern
 data2 %>% 
-  filter(Motorart == c("Verbrenner", "Elektro")) %>%
+  filter(Motorart %in% c("Elektro", "Verbrenner")) %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>%
   drop_na(Reichweite.Gesamt) %>% 
   mutate(Reichweite.Gesamt_mean = mean(Reichweite.Gesamt)) %>% 
@@ -295,7 +295,6 @@ data2 %>%
     title = "Entwicklung der durchschnittlichen Reichweite von Elektromotoren vs Verbrenner",
     y = "Reichweite des Autos in km"
   )
-
 ```
 
 Batteriekapazität
