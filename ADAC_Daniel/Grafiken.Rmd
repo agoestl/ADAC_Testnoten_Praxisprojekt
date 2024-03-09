@@ -83,6 +83,17 @@ data <- data %>%
   mutate(Grundpreis = gsub(" Euro", "", Grundpreis),
          Grundpreis = ifelse(Grundpreis == "-", NA, Grundpreis),
          Grundpreis = as.numeric(Grundpreis))
+
+# Reichweite.WLTP..elektrisch. zu numeric machen
+data <- data %>% 
+  mutate(Reichweite.WLTP..elektrisch. = gsub(" km", "", Reichweite.WLTP..elektrisch.),
+         Reichweite.WLTP..elektrisch. = as.numeric(Reichweite.WLTP..elektrisch.)) %>% 
+  rename(Reichweite.elektrisch.in.km = Reichweite.WLTP..elektrisch.)
+
+#Batteriekapazität..Netto..in.kWh zu numeric machen
+data <- data %>% 
+  mutate(Batteriekapazität..Netto..in.kWh = gsub(",", ".", Batteriekapazität..Netto..in.kWh),
+         Batteriekapazität..Netto..in.kWh = as.numeric(Batteriekapazität..Netto..in.kWh))
 ```
 
 #### Marke
@@ -421,20 +432,32 @@ ggplot(data, aes(x = Gesamtpunktzahl)) +
 ggplot(data, aes(x = Gesamtpunktzahl)) +
   geom_boxplot() +
   labs(
-    title = "Verteilung der Gesamtpunktzahl",
-    y = "Anzahl"
+    title = "Verteilung der Gesamtpunktzahl"
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
   )
 
 # Gesamtpunktzahl nach deutscher.Hersteller
 data %>% 
   group_by(deutscher.Hersteller) %>% 
   summarise(Gesamtpunktzahl = mean(Gesamtpunktzahl)) %>% 
-  ggplot(aes(deutscher.Hersteller, y = Gesamtpunktzahl)) +
+  ggplot(aes(x = deutscher.Hersteller, y = Gesamtpunktzahl)) +
   geom_col() +
   labs(
     title = "Vergleich zwischen deutschen und ausländischen Herstellern",
     x = "Hersteller",
     y = "durchschnittliche Gesamtpunktzahl"
+  )
+
+# Gesamtpunktzahl nach deutscher.Hersteller (geom_boxplot)
+data %>% 
+  ggplot(aes(x = deutscher.Hersteller, y = Gesamtpunktzahl)) +
+  geom_boxplot() +
+  labs(
+    title = "Vergleich zwischen deutschen und ausländischen Herstellern",
+    x = "Hersteller"
   )
 
 # CO2-Ausstoß nach Gesamtpunktzahl
@@ -458,9 +481,20 @@ data %>%
   ggplot(aes(x = fct_relevel(CO2.Effizienzklasse, "A+"), y = Gesamtpunktzahl)) +
   geom_col() +
   labs(
-    title = "Gesamtpunktzahl nach CO2-Effizienzklasse",
+    title = "Durschnittliche Gesamtpunktzahl nach CO2-Effizienzklasse",
     x = "CO2-Effizienzklasse",
     y = "durchschnittliche Gesamtpunktzahl"
+  )
+
+# Gesamtpunktzahl nach CO2-Effizienzklasse (geom_boxplot)
+data %>% 
+  drop_na(CO2.Effizienzklasse) %>% 
+  ggplot(aes(x = fct_relevel(CO2.Effizienzklasse, "A+"), y = Gesamtpunktzahl)) +
+  geom_boxplot() +
+  labs(
+    title = "Gesamtpunktzahl nach CO2-Effizienzklasse",
+    x = "CO2-Effizienzklasse",
+    y = "Gesamtpunktzahl"
   )
 
 # Gesamtpunktzahl nach Motorart
@@ -470,8 +504,17 @@ data %>%
   ggplot(aes(x = Motorart, y = Gesamtpunktzahl)) +
   geom_col() +
   labs(
-    title = "Gesamtpunktzahl nach Motorart",
+    title = "Durschnittliche Gesamtpunktzahl nach Motorart",
     y = "durchschnittliche Gesamtpunktzahl"
+  )
+
+# Gesamtpunktzahl nach Motorart (geom_boxplot)
+data %>% 
+  ggplot(aes(x = Motorart, y = Gesamtpunktzahl)) +
+  geom_boxplot() +
+  labs(
+    title = "Gesamtpunktzahl nach Motorart",
+    y = "Gesamtpunktzahl"
   )
 
 # Leistung nach Gesamtpunktzahl
@@ -568,6 +611,32 @@ data %>%
     title = "Grundpreis nach Gesamtpunktzahl gruppiert nach Motorart",
     y = "Grundpreis in Euro"
   )
+
+# Reichweite nach Gesamtpunktzahl für Elektroautos
+data %>% 
+  drop_na(Reichweite.elektrisch.in.km) %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(Reichweite.elektrisch.in.km = mean(Reichweite.elektrisch.in.km)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Reichweite.elektrisch.in.km)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Reichweite nach Gesamtpunktzahl für Elektroautos",
+    y = "Reichweite in km"
+  )
+
+# Batteriekapazität nach Gesamtpunktzahl für Elektroautos
+data %>% 
+  drop_na(Batteriekapazität..Netto..in.kWh) %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(Batteriekapazität..Netto..in.kWh = mean(Batteriekapazität..Netto..in.kWh)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Batteriekapazität..Netto..in.kWh)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Batteriekapazität nach Gesamtpunktzahl für Elektroautos",
+    y = "Batteriekapazität in kWh"
+  )
 ```
 Man erkennt, dass die meisten vergebenen Gesamtpunktzahlen zwischen 57/58 und 75 liegen.
 Man erkennt, dass es einen Zusammenhang zwischen CO2-Ausstoß und Gesamtpunktzahl gibt. Umso geringer der Ausstoß, desto höher die Punktzahl. (quadratisch?)
@@ -576,3 +645,6 @@ Man erkennt, dass Elektro/Gas Autos eine höhere durschnittliche Gesamtpunktzahl
 Man erkennt, dass es einen Zusammenhang zwischen Leistungsgewicht und Gesamtpunktzahl bei Elektro/Gas und Hybrid Autos gibt.
 Bei Elektro/Gas ist, umso geringer das Leistungsgewicht, desto höher die Punktzahl.
 Bei Hybrid ist, umso höher das Leistungsgewicht, desto höher die Punktzahl.
+Man erkennt, dass es einen Zusammenhang zwischen Reichweite von Elektroautos und der GEsamtpunktzahl gibt.
+Tendenziell hat eine höhere Reichweite eine höhere Punktzahl, wobei es bei sehr hohen Punktzahlen nicht mehr unbedingt stimmt.
+Denselben Zusammenhang kann man auch zwischen der Batteriekapazität von Elektroautos und der Gesamtpunktzahl erkennen.
