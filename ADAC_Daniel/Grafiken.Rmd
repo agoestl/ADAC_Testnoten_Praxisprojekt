@@ -77,6 +77,12 @@ data <- data %>%
 data <- data %>% 
   mutate(Gesamtpunktzahl = gsub(" Punkte", "", Gesamtpunktzahl),
          Gesamtpunktzahl = as.numeric(Gesamtpunktzahl))
+
+# Grundpreis zu numeric machen
+data <- data %>% 
+  mutate(Grundpreis = gsub(" Euro", "", Grundpreis),
+         Grundpreis = ifelse(Grundpreis == "-", NA, Grundpreis),
+         Grundpreis = as.numeric(Grundpreis))
 ```
 
 #### Marke
@@ -403,9 +409,17 @@ Man erkennt, dass es mit der Zeit einen Anstieg des Verhältnisses gab, vorallem
 #### Variablen mit Gesamtpunktzahl vergleichen
 
 ```{r}
-# Verteilung der Gesamtpunktzahl
+# Verteilung der Gesamtpunktzahl (geom_bar)
 ggplot(data, aes(x = Gesamtpunktzahl)) +
   geom_bar() +
+  labs(
+    title = "Verteilung der Gesamtpunktzahl",
+    y = "Anzahl"
+  )
+
+# Verteilung der Gesamtpunktzahl (geom_boxplot)
+ggplot(data, aes(x = Gesamtpunktzahl)) +
+  geom_boxplot() +
   labs(
     title = "Verteilung der Gesamtpunktzahl",
     y = "Anzahl"
@@ -527,8 +541,35 @@ data %>%
     title = "Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Gesamtpunktzahl",
     y = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
   )
+
+# Grundpreis nach Gesamtpunktzahl
+data %>% 
+  drop_na(Grundpreis) %>% 
+  group_by(Gesamtpunktzahl, Motorart) %>% 
+  mutate(Grundpreis = mean(Grundpreis)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Grundpreis)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Grundpreis nach Gesamtpunktzahl",
+    y = "Grundpreis in Euro"
+  )
+
+# Grundpreis nach Gesamtpunktzahl gruppiert nach Motorart
+data %>% 
+  drop_na(Grundpreis) %>% 
+  group_by(Gesamtpunktzahl, Motorart) %>% 
+  mutate(Grundpreis = mean(Grundpreis)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Grundpreis)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  facet_wrap(~Motorart) +
+  labs(
+    title = "Grundpreis nach Gesamtpunktzahl gruppiert nach Motorart",
+    y = "Grundpreis in Euro"
+  )
 ```
-Man erkennt, dass die meisten vergebenen Gesamtpunktzahlen zwischen 57/58 und 75/76 liegen.
+Man erkennt, dass die meisten vergebenen Gesamtpunktzahlen zwischen 57/58 und 75 liegen.
 Man erkennt, dass es einen Zusammenhang zwischen CO2-Ausstoß und Gesamtpunktzahl gibt. Umso geringer der Ausstoß, desto höher die Punktzahl. (quadratisch?)
 Man erkennt, dass die durschnittliche Gesamtpunktzahl für jede schlechtere CO2-Effizienzklasse geringer wird.
 Man erkennt, dass Elektro/Gas Autos eine höhere durschnittliche Gesamtpunktzahl haben, als Hybrid/Verbrenner Autos.
