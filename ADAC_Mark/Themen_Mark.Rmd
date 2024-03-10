@@ -8,6 +8,7 @@ data <- read.csv("cleandedData.csv")
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
+library(stringr)
 ```
 
 Thema 1
@@ -165,7 +166,16 @@ Thema 8
 
 Aufbereiten der Daten
 ```{r}
-#Ladezeiten für 100% auswählen
+#Ladezeiten collumn umschreiben
+#collumn mit einträgen von 100%: __ min. (AC Schuko 2,8 kW) erstellen
+data$Ladezeiten_Schuko.2.3kW <- data$Ladezeiten
+#Der folgende Ansatz funktioniert da die Daten welche "AC Schuko 2,3 kW" beinhalten einheitlich sind
+data <- data %>%
+  mutate(Ladezeiten_Schuko.2.3kW = ifelse(grepl("AC Schuko 2,3 kW", Ladezeiten_Schuko.2.3kW), Ladezeiten_Schuko.2.3kW, NA))
+
+data$Ladezeiten_Schuko.2.3kW <- str_extract(data$Ladezeiten_Schuko.2.3kW, pattern = " (?<=\\s)\\d+")
+data$Ladezeiten_Schuko.2.3kW <- gsub(" ", "", data$Ladezeiten_Schuko.2.3kW)
+data$Ladezeiten_Schuko.2.3kW <- as.numeric(data$Ladezeiten_Schuko.2.3kW)
 
 #Batteriekapazität Netto zu numeric
 data <- data %>% 
@@ -200,10 +210,68 @@ data2$Reichweite.Gesamt <- coalesce(data2$Reichweite_elektisch_in.km, data2$Reic
 Ladezeiten
 ```{r}
 #Mit Barreriekapazität
+data %>%
+  filter(Motorart == "Elektro") %>%
+  group_by(Batteriekapazität..Netto..in.kWh) %>% 
+  drop_na(Ladezeiten_Schuko.2.3kW) %>% 
+  summarise(Ladezeiten_Schuko.2.3kW_mean = mean(Ladezeiten_Schuko.2.3kW)) %>% 
+  ggplot(aes(x = Batteriekapazität..Netto..in.kWh, y = Ladezeiten_Schuko.2.3kW_mean)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Ladezeit nach Batterienkapazität von Elektromotoren",
+    x = "Battarienkapazität",
+    y = "Ladezeit (2.3kW) in Minuten"
+  )
+#mit hybrid etc
+data %>%
+  group_by(Batteriekapazität..Netto..in.kWh) %>% 
+  drop_na(Ladezeiten_Schuko.2.3kW) %>% 
+  summarise(Ladezeiten_Schuko.2.3kW_mean = mean(Ladezeiten_Schuko.2.3kW)) %>% 
+  ggplot(aes(x = Batteriekapazität..Netto..in.kWh, y = Ladezeiten_Schuko.2.3kW_mean)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Ladezeit nach Batterienkapazität von allen Elektromotoren",
+    x = "Battarienkapazität",
+    y = "Ladezeit (2.3kW) in Minuten"
+  )
 
 #Durchschnittliche Ladezeit pro Jahr nach Baureihenstart
-
+data %>% 
+  filter(Motorart == "Elektro") %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  drop_na(Ladezeiten_Schuko.2.3kW) %>% 
+  mutate(Ladezeiten_Schuko.2.3kW_mean = mean(Ladezeiten_Schuko.2.3kW)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Ladezeiten_Schuko.2.3kW_mean)) +
+  geom_line() + 
+  labs(
+    title = "Entwicklung der durchschnittlichen Ladezeit von Elektromotoren (2.3 kW)",
+    y = "Ladezwit des Autos in minuten"
+  )
 #Durchschnittliche Durchschnittliche Ladezeit nach Marke
+data %>% 
+  filter(Motorart == "Elektro") %>%
+  drop_na(Ladezeiten_Schuko.2.3kW) %>% 
+ggplot(aes(x = Marke, y = Ladezeiten_Schuko.2.3kW)) +
+  geom_bar(position='dodge', stat='summary', fun='mean') +
+  geom_text(aes(label=..count..), y=0, stat='count', colour="red", size=4) +
+  labs(x = "Marke", y = "Durchschnittliche Ladezeit in minuten", title = "Durschnittliche Ladezeiten der E-Motoren nach Marke") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+#wie viele beobachtungen pro jahr
+data %>% 
+  filter(Motorart == "Elektro") %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  drop_na(Ladezeiten_Schuko.2.3kW) %>% 
+ggplot(aes(x = Baureihenstart, y = Ladezeiten_Schuko.2.3kW)) +
+  geom_bar(position='dodge', stat='summary', fun='mean') +
+  geom_text(aes(label=..count..), y=0, stat='count', colour="red", size=4) +
+  labs(x = "Marke", y = "Durchschnittliche Ladezeit in minuten", title = "Durschnittliche Ladezeiten der E-Motoren nach Marke") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 Reichweite
