@@ -112,6 +112,13 @@ data <- data %>% mutate(Länge = gsub(" mm$", "", Länge)) %>%
                  mutate(Breite = as.numeric(Breite))
 
 interssante_Karosserie <- c("Coupe", "Bus", "Van", "Kombi", "Schrägheck", "SUV")
+
+# anlass vereinfachen in nullen und einsen
+data <- data %>% mutate(Fehler_ja_nein = ifelse(is.na(Anlass), 0, 1))
+
+# in deutsche und weltweit betroffene Fahrzeuge aufteilen
+data <- data %>% mutate(Deutschlandweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "\\d+\\.\\d+"),
+                        Weltweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "(?<=\\)\\s)\\d+\\.\\d+"))
 ```
 
 
@@ -201,7 +208,7 @@ df_long_Fix_2 %>% ggplot(aes(x = Motorart, y = Fixkosten, fill = Position)) +
        y = "Aufsummierte Fixkosten in €",
        fill = "Position")
 ```
-Erkentnisse :
+Erkenntnisse :
 
 Preise für Elektro/Gas sind seit 2010 gestiegen und fallen seit 2020.
 Preise für Hybrid sind generell höher als Verbrenner und schwankt, seit 2022 ist Hybrid billiger als Verbrenner (war er noch nie vorher).
@@ -291,10 +298,9 @@ data %>% mutate(Verhältniss = Leergewicht..EU.in.kg/CO2.Ausstoß_g.pro.km)%>%
        x = "Zeit", 
        y = "kg Gewicht / g Ausstoß", 
        color = "Antriebsart")  
-
 ```
 
-Erkentnisse:
+Erkenntnisse:
 
 Autos werden immer größer unabhänig von der Marke.
 Das Leistungsgewicht steigt bei Elektor/Gas Autos und stagniert bei Verbrenner und Hybrid.
@@ -310,13 +316,6 @@ Thema 10
 Anlass : welcher Mängel aufgetreten ist 
 Zusammen mit Baureihenstart und Marke und Anzahl betroffener Fahrzeuge
 ```{r}
-# anlass vereinfachen in nullen und einsen
-data <- data %>% mutate(Fehler_ja_nein = ifelse(is.na(Anlass), 0, 1))
-
-# in deutsche und weltweit betroffene Fahrzeuge aufteilen
-data <- data %>% mutate(Deutschlandweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "\\d+\\.\\d+"),
-                        Weltweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "(?<=\\)\\s)\\d+\\.\\d+"))
-
 # Anzahl der mangelhaften Modelle pro Jahr und Marke
 data %>% filter(Marke %in% eu_nicht_eu_marken) %>% 
   group_by(Marke, Baureihenstart) %>% 
@@ -343,7 +342,14 @@ data %>% group_by(Motorart, Baureihenstart) %>%
 
 # Verhältniss der betroffenen Modelle welt und deutschland weit über die Zeit 
 
-
+data %>% ggplot(aes(x = Baureihenstart)) +
+  geom_smooth(aes(y = Deutschlandweit.betroffene.Fahrzeuge, fill = "Deutschland"), method = "loess", se = FALSE,span = 2) +
+  geom_smooth(aes(y = Weltweit.betroffene.Fahrzeuge, fill = "Weltweit"), method = "loess", se = FALSE, span = 2) +
+  labs(title = "Deutschland vs. Weltweit over Time",
+       x = "Zeit",
+       y = "Anzahl an betroffenen Fahrzeugen") +
+  scale_fill_manual(values = c("Deutschland" = "blue", "Weltweit" = "red")) +
+  theme_minimal()
 ```
 Erkenntnisse:
 
