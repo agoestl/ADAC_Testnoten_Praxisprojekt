@@ -113,6 +113,13 @@ data <- data %>% mutate(Länge = gsub(" mm$", "", Länge)) %>%
                  mutate(Breite = as.numeric(Breite))
 
 interssante_Karosserie <- c("Coupe", "Bus", "Van", "Kombi", "Schrägheck", "SUV")
+
+# anlass vereinfachen in nullen und einsen
+data <- data %>% mutate(Fehler_ja_nein = ifelse(is.na(Anlass), 0, 1))
+
+# in deutsche und weltweit betroffene Fahrzeuge aufteilen
+data <- data %>% mutate(Deutschlandweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "\\d+\\.\\d+"),
+                        Weltweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "(?<=\\)\\s)\\d+\\.\\d+"))
 ```
 
 Thema 1
@@ -162,8 +169,16 @@ data %>% filter(Marke %in% eu_nicht_eu_marken ) %>%
   stat_summary(fun = "mean", geom = "bar", position = "dodge") +
     labs(title = "Durchschnittspreis nach CO2-Effizienzklasse und Marke",
        x = "CO2-Effizienzklasse",
-       y = "Durchschnittspreis",
+       y = "Durchschnittspreis in €",
        fill = "Marke")
+
+# Grundpreis pro Marke für CO2-Effizienzklassen 
+data %>% filter(!is.na(CO2.Effizienzklasse)) %>%
+  ggplot(aes(x = CO2.Effizienzklasse, y = Grundpreis)) +
+  geom_boxplot() +
+    labs(title = "Durchschnittspreis nach CO2-Effizienzklasse und Marke",
+       x = "CO2-Effizienzklasse",
+       y = "Durchschnittspreis in €")
 
 ### Laufende Kosten 
 
@@ -201,6 +216,23 @@ df_long_Fix_2 %>% ggplot(aes(x = Motorart, y = Fixkosten, fill = Position)) +
        y = "Aufsummierte Fixkosten in €",
        fill = "Position")
 ```
+Erkenntnisse :
+
+Preise für Elektro/Gas sind seit 2010 gestiegen und fallen seit 2020.
+Preise für Hybrid sind generell höher als Verbrenner und schwankt, seit 2022 ist Hybrid billiger als Verbrenner (war er noch nie vorher).
+Verbrenner Preise steigen kontinuierlich seit ca 2003.
+Deutsche Marken generll teurer als ausländische Konkurenz und Preise steigen generell.
+Zweit Schlechteste Effizienzklasse ist am günstigsten die schlechteste ist eine der Teuersten und die deutschen Autobauer sind am Teuersten in jeder Klasse.
+Laufende kosten ist bei Verbrenner am höchsten seit 2010 am sinken, seit 2021 sinken die laufenden Kosten bei allen Motorarten.
+Laufende Kosten bei Elektor/Gas am geringsten bei Hybrid die Werkstattkosten am teuersten bei Verbrenner die KFZ Steuer.
+Der Wertverlust ist bei Elektro am höchsten bei Verbrenner am niedrigsten. 
+
+
+
+
+
+
+
 
 Thema 3
 
@@ -466,6 +498,16 @@ data %>% filter(Marke %in% eu_nicht_eu_marken) %>%
        y = "Größe in Liter", 
        color = "Marke")
 
+# Größe des Autos im Vergleich zur Zeit udn Antriebsart
+data %>% group_by(Motorart, Baureihenstart) %>% 
+  mutate(Volumen = (Länge * Breite * Höhe) / 1000000) %>% 
+  ggplot(aes(x = Baureihenstart, y = Volumen, color = Motorart)) + 
+  geom_smooth(method = "loess", span = 0.4, se = FALSE, na.rm = TRUE) + 
+  labs(title = "Größe pro Zeit", 
+       x = "Zeit", 
+       y = "Größe in Liter", 
+       color = "Marke")
+
 # Leistungsgewicht in abhängigkeit von der Antriebsart
 data %>% group_by(Motorart, Baureihenstart) %>% 
   mutate(Verhältnis = Leistung.maximal.in.PS..Systemleistung./Leergewicht..EU.in.kg) %>% 
@@ -510,8 +552,21 @@ data %>% mutate(Verhältniss = Leergewicht..EU.in.kg/CO2.Ausstoß_g.pro.km)%>%
   labs(title = "Verhältnis von Gewicht des Autos in kg zu g C02 Ausstoß", 
        x = "Zeit", 
        y = "kg Gewicht / g Ausstoß", 
-       color = "Antriebsart") 
+       color = "Antriebsart")  
 ```
+Erkenntnisse:
+
+Autos werden immer größer unabhänig von der Marke.
+Das Leistungsgewicht steigt bei Elektor/Gas Autos und stagniert bei Verbrenner und Hybrid.
+Anteil an SUV stark gestiegen seit 2010, liegt bei ca 50% danch Schrägheck und Kombi.
+Verbrauch gesunken und seit 2015 steigen bis auf SUV, VAN und BUS diese fallen.
+Bei Hybrid der höchste Ausstoß an CO pro KG Autogewicht ????
+
+
+
+
+
+
 
 Thema 7
 
@@ -555,14 +610,7 @@ Thema 10
 Anlass : welcher Mängel aufgetreten ist 
 Zusammen mit Baureihenstart und Marke und Anzahl betroffener Fahrzeuge
 ```{r}
-# anlass vereinfachen in nullen und einsen
-data <- data %>% mutate(Fehler_ja_nein = ifelse(is.na(Anlass), 0, 1))
-
-# in deutsche und weltweit betroffene Fahrzeuge aufteilen
-data <- data %>% mutate(Deutschlandweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "\\d+\\.\\d+"),
-                        Weltweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "(?<=\\)\\s)\\d+\\.\\d+"))
-
-# Anzahl der mangelhaften Modelle pro Jahr
+# Anzahl der mangelhaften Modelle pro Jahr und Marke
 data %>% filter(Marke %in% eu_nicht_eu_marken) %>% 
   group_by(Marke, Baureihenstart) %>% 
   mutate(sum_Fehler = sum(Fehler_ja_nein)) %>%
@@ -574,43 +622,34 @@ data %>% filter(Marke %in% eu_nicht_eu_marken) %>%
        y = "Anzahl mangelhafter Modelle", 
        color = "Marke")
 
-# Verhältniss zwischen deutschen und weltweiten betroffenen Modellen pro Antriebsart
-pivot_cols_Mangel <- c("Deutschlandweit.betroffene.Fahrzeuge", "Weltweit.betroffene.Fahrzeuge") 
-df_long_Mangel <- data %>% pivot_longer(cols = all_of(pivot_cols_Mangel), names_to = "Region", values_to = "AnzahlMangel")
 
-df_long_Mangel %>% ggplot(aes(x = Motorart, y = AnzahlMangel, fill = Region)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Verhältniss zwischen deutschen und weltweiten betroffenen Modellen pro Antriebsart",
-       x = "Antriebsart",
-       y = "Anzahl mangelhafter Modelle",
-       fill = "Region")
+# Anzahl der mangelhaften Modelle pro Jahr und Antriebsart
+data %>% group_by(Motorart, Baureihenstart) %>% 
+  mutate(sum_Fehler = sum(Fehler_ja_nein)) %>%
+  ggplot(aes(x = Baureihenstart, y = sum_Fehler, color = Motorart)) + 
+  geom_smooth(method = "loess", span = 0.4, se = FALSE, na.rm = TRUE) + 
+  ylim(0,NA) +
+  labs(title = "Anzahl der mangelhaften Modelle pro Jahr und Marke ", 
+       x = "Zeit", 
+       y = "Anzahl mangelhafter Modelle", 
+       color = "Antriebsart")
+
+# Verhältniss der betroffenen Modelle welt und deutschland weit über die Zeit 
+
+data %>% ggplot(aes(x = Baureihenstart)) +
+  geom_smooth(aes(y = Deutschlandweit.betroffene.Fahrzeuge, fill = "Deutschland"), method = "loess", se = FALSE,span = 2) +
+  geom_smooth(aes(y = Weltweit.betroffene.Fahrzeuge, fill = "Weltweit"), method = "loess", se = FALSE, span = 2) +
+  labs(title = "Deutschland vs. Weltweit over Time",
+       x = "Zeit",
+       y = "Anzahl an betroffenen Fahrzeugen") +
+  scale_fill_manual(values = c("Deutschland" = "blue", "Weltweit" = "red")) +
+  theme_minimal()
 ```
+Erkenntnisse:
 
-Thema 11
-```{r}
-
-```
-
-Thema 12
-```{r}
-
-```
-
-Thema 13
-```{r}
-
-```
-
-Thema 14
-```{r}
-
-```
-
-Thema 15
-```{r}
-
-```
-
+Höhepunkt der mangelhaften Modelle bei 2005 bei ca. 10 Stück dabei die deutschen Marken die meisten. 
+Generell fallen die Anzahl der Mängel pro Jahr seit 2012.
+Bei Hybrid und Elektor konstant ca. 2-3 Modelle pro Jahr bei Verbrenner ca. 10 bis max 17 im Jahr 2008 weil Warnung der USA wegen fälschung der Abgaswerte. 
 
 
 ----------------------------------------------
