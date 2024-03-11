@@ -54,10 +54,9 @@ data <- data %>%
   rename(Leergewicht..EU.in.kg = Leergewicht..EU.)
 ```
 
-```{r} 
-########### Alex Variablen ########### 
 
 
+```{r}
 #top n marken rausfiltern 
 data %>%
   count(Marke) %>%
@@ -122,15 +121,8 @@ data <- data %>% mutate(Deutschlandweit.betroffene.Fahrzeuge = str_extract(Anzah
                         Weltweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "(?<=\\)\\s)\\d+\\.\\d+"))
 ```
 
-Thema 1
 
-CO2-Effizienzklasse: Gibt die CO2-Effizienzklasse des Autos an.
-Anschauen mit: Modellstart,  Leistung, Fahrzeugklassen
-+
-CO2.Wert..NEFZ.: Gibt den CO2-Ausstoß des Autos in g/km an.
-```{r}
-
-```
+------------------------------------------------------------------
 
 Thema 2
 
@@ -227,259 +219,12 @@ Laufende kosten ist bei Verbrenner am höchsten seit 2010 am sinken, seit 2021 s
 Laufende Kosten bei Elektor/Gas am geringsten bei Hybrid die Werkstattkosten am teuersten bei Verbrenner die KFZ Steuer.
 Der Wertverlust ist bei Elektro am höchsten bei Verbrenner am niedrigsten. 
 
-
-
-
-
-
-
-
-Thema 3
-
-Motorart: Gibt die Motorart des Autos an. (Vllt. in allgeimeine Werte umwandeln, z.B. Verbrenner, Elektro, etc.)
-Anschauen mit: Modellstart (Entwicklung zu Elektroautos erkennbar?)
-```{r}
-# Häufigkeit der einzelnen Motorarten
-ggplot(data, aes(x = Motorart)) + 
-  geom_bar() +
-  labs(
-    title = "Häufigkeit der einzelnen Motorarten",
-    y = "Anzahl"
-  )
-
-# Häufigkeiten der einzelnen Motorarten als Vergleich zwischen deutschen und ausländischen Herstellern
-ggplot(data, aes(x = Motorart, fill = deutscher.Hersteller)) +
-  geom_bar(position = "dodge") +
-  labs(
-    title = "Vergleich zwischen deutschen und ausländischen Herstellern",
-    y = "Anzahl",
-    fill = "Hersteller"
-  )
-
-# Relative Häufigkeiten der einzelnen Motorarten als Vergleich zwischen deutschen und ausländischen Herstellern
-data %>% 
-  group_by(Motorart) %>%
-  mutate(Anzahl.Motorart = n()) %>% 
-  group_by(Motorart, deutscher.Hersteller) %>%
-  mutate(Anzahl.Hersteller.Motorart = n()) %>% 
-  mutate(relativ.Motorart = Anzahl.Hersteller.Motorart / Anzahl.Motorart) %>% 
-  ggplot(aes(x = Motorart, y = relativ.Motorart, fill = deutscher.Hersteller)) +
-  geom_col(position = "dodge") +
-  labs(
-    title = "relativer Vergleich zwischen deutschen und ausländischen Herstellern",
-    y = "relative Häufigkeit",
-    fill = "Hersteller"
-  )
-
-# Häufigkeit der Motorarten nach Baureihenstart (zeitliche Entwicklung)
-data %>% 
-  #mutate(
-  #  Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>% 
-  count() %>% 
-  ggplot(aes(x = Baureihenstart, y = n, color = Motorart)) +
-  geom_line() +
-  labs(y = "Anzahl")
-
-# Relative Häufigkeit der Motorarten nach Baureihenstart (zeitliche Entwicklung)
-data %>% 
-  #mutate(
-  #  Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
-  mutate(Anzahl.Jahr = n()) %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>%
-  mutate(Anzahl.Jahr.Motorart = n()) %>% 
-  mutate(relativ.Motorart = Anzahl.Jahr.Motorart / Anzahl.Jahr) %>% 
-  ggplot(aes(x = Baureihenstart, y = relativ.Motorart, color = Motorart)) +
-  geom_line() +
-  labs(
-    title = "Relative Häufigkeit der Motorarten nach Baureihenstart",
-    y = "relative Häufigkeit"
-  )
-
-# Vergleich der Entwicklung der Motorarten zwischen deutschen und ausländischen Herstellern
-data %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), deutscher.Hersteller) %>%
-  mutate(Anzahl.Jahr = n()) %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), deutscher.Hersteller, Motorart) %>%
-  mutate(Anzahl.Jahr.Motorart = n()) %>% 
-  mutate(relativ.Motorart = Anzahl.Jahr.Motorart / Anzahl.Jahr) %>% 
-  ggplot(aes(x = Baureihenstart, y = relativ.Motorart, color = Motorart)) +
-  geom_line() +
-  facet_wrap(~deutscher.Hersteller) +
-  labs(
-    title = "Relative Häufigkeit der Motorarten nach Baureihenstart",
-    y = "relative Häufigkeit"
-  )
-```
-
-Thema 4
-
-Leistung.maximal.in.PS..Systemleistung.: Gibt die maximale PS des Autos an.  # Vllt. in kW angeben, da das die offizielle Angabe ist?
-Anschauen mit: Modellstart, CO2-Ausstoß, Motorart, Hubraumgröße, Leistung/Gewicht verhältniss (bei Alex)
-```{r}
-# Leistung in PS nach Baureihenstart (zeitliche Entwicklung)
-data %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% 
-  summarise(Leistung.in.PS = mean(Leistung.maximal.in.PS..Systemleistung.)) %>% 
-  ggplot(aes(x = Baureihenstart, y = Leistung.in.PS)) +
-  geom_line() +
-  labs(
-    title = "Leistung in PS nach Baureihenstart",
-    y = "PS"
-  )
-
-# CO2-Ausstoß nach Leistung in PS
-data %>% 
-  group_by(Leistung.maximal.in.PS..Systemleistung.) %>% 
-  drop_na(CO2.Ausstoß_g.pro.km) %>% 
-  summarise(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
-  ggplot(aes(x = Leistung.maximal.in.PS..Systemleistung., y = CO2.Ausstoß)) +
-  geom_point() +
-  geom_smooth(method = "loess", se = FALSE, color = "red") +
-  labs(
-    title = "CO2-Ausstoß nach Leistung in PS",
-    x = "PS",
-    y = "CO2-Ausstoß in g/km"
-  )
-
-# Maximale Leistung nach Motorarten
-data %>% 
-  #mutate(
-  #  Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
-  group_by(Motorart) %>% 
-  summarise(Leistun.in.PS = max(Leistung.maximal.in.PS..Systemleistung.)) %>% 
-  ggplot(aes(x = Motorart, y = Leistun.in.PS)) +
-  geom_col() + 
-  labs(
-    title = "Maximale Leistung in PS nach Motorart",
-    y = "PS"
-  )
-
-# Maximale Leistung in PS der Motorarten nach Baureihenstart (zeitliche Entwicklung)
-data %>% 
-  #mutate(
-  #  Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas"))) %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>% 
-  mutate(Leistung.in.PS = mean(Leistung.maximal.in.PS..Systemleistung.)) %>% 
-  ggplot(aes(x = Baureihenstart, y = Leistung.in.PS, color = Motorart)) +
-  geom_smooth(se = FALSE) + # Vllt durch geom_point oder geom_line ersetzen?
-  labs(
-  title = "Leistung in PS der Motorarten nach Baureihenstart",
-  y = "PS"
-  )
-
-# Leistung in PS nach Hubraumgröße
-data %>% 
-  drop_na(Hubraumgröße) %>% 
-  group_by(Hubraumgröße) %>% 
-  summarise(Leistung.in.PS = mean(Leistung.maximal.in.PS..Systemleistung.)) %>% 
-  ggplot(aes(x = Hubraumgröße, y = Leistung.in.PS)) + 
-  geom_point() +
-  geom_smooth(method = "loess", se = FALSE, color = "red") +
-  labs(
-    title = "Leistung in PS nach Hubraumgröße",
-    y = "PS"
-  )
-
-# CO2-Ausstoß nach Baureihenstart gruppiert nach Leistung in PS für Verbrenner
-data %>% 
-  filter(Motorart == "Verbrenner") %>% 
-  mutate(Leistung.maximal.in.PS..Systemleistung. = cut(Leistung.maximal.in.PS..Systemleistung.,
-                                                       breaks = c(0, 120, 180, 300, Inf))) %>% 
-  drop_na(CO2.Ausstoß_g.pro.km) %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Leistung.maximal.in.PS..Systemleistung.) %>% 
-  mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
-  ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Leistung.maximal.in.PS..Systemleistung.)) +
-  geom_line() +
-  labs(
-    title = "CO2-Ausstoß nach Baureihenstart gruppiert nach Leistung in PS (Verbrennermotor)",
-    y = "CO2-Ausstoß in g/km",
-    color = "PS"
-  ) +
-  scale_color_discrete(labels = c("<120", "120-180", "180-300", "300<"))
-
-# Verhältniss von Gewicht zu Leistung nach Baureihenstart gruppiert gruppiert nach Motorart
-data %>%
-  drop_na(Leergewicht..EU.in.kg) %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>% 
-  mutate(Verhältnis = Leergewicht..EU.in.kg / Leistung.maximal.in.PS..Systemleistung.) %>% 
-  ggplot(aes(x = Baureihenstart, y = Verhältnis, color = Motorart)) + 
-  geom_smooth(method = "loess", se = FALSE) + 
-  labs(
-    title = "Leistungsgewicht abhängig von Motorart",
-    y = "Leistungsgewicht in kg/PS",
-    color = "Motorart"
-  )
-```
-
-Thema 5
-
-Hubraum..Verbrennungsmotor. / Hubraum: Gibt die Hubraumgröße des Motors des Autos in ccm an.
-Anschauen mit: Modellstart, CO2-Ausstoß, CO2-Effizienzklasse, Treibstoffverbrauch, Leistung (bei Daniel)
-```{r}
-# Hubraumgröße in ccm nach Baureihenstart (zeitliche Entwicklung)
-data %>% 
-  drop_na(Hubraumgröße) %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% 
-  summarise(Hubraumgröße = mean(Hubraumgröße)) %>% 
-  ggplot(aes(x = Baureihenstart, y = Hubraumgröße)) +
-  geom_line() +
-  labs(
-    title = "Hubraumgröße nach Baureihenstart",
-    y = "Hubraumgröße in ccm"
-  )
-
-# CO2-Ausstoß nach Hubraumgröße in ccm für Verbrenner
-data %>% 
-  filter(Motorart == "Verbrenner") %>% 
-  drop_na(CO2.Ausstoß_g.pro.km) %>% 
-  group_by(Hubraumgröße) %>% 
-  summarise(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
-  ggplot(aes(x = Hubraumgröße, y = CO2.Ausstoß)) + 
-  geom_point() +
-  geom_smooth(method = "loess", se = FALSE, color = "red") +
-  labs(
-    title = "CO2-Ausstoß nach Hubraumgröße (Verbrenner)",
-    x = "Hubraumgröße in ccm",
-    y = "CO2-Ausstoß in g/km"
-  )
-
-# Treibstoffverbrauch nach Hubraumgröße
-data %>% 
-  filter(Motorart == "Verbrenner") %>% 
-  drop_na(Verbrauch.gesamt.in.l.kg.kWh_100Km) %>% 
-  group_by(Hubraumgröße) %>% 
-  summarise(Verbrauch.in.l_pro_100km = mean(Verbrauch.gesamt.in.l.kg.kWh_100Km)) %>% 
-  ggplot(aes(x = Hubraumgröße, y = Verbrauch.in.l_pro_100km)) +
-  geom_point() +
-  geom_smooth(method = "loess", se = FALSE, color = "red") +
-  labs(
-    title = "Treibstoffverbrauch nach Hubraumgröße",
-    y = "Verbrauch in l/100km"
-  )
-
-# CO2-Ausstoß nach Baureihenstart gruppiert nach Hubraumgröße in ccm für Verbrenner
-data %>% 
-  filter(Motorart == "Verbrenner") %>% 
-  mutate(Hubraumgröße = cut(Hubraumgröße, breaks = c(0, 1500, 2000, 3000, Inf))) %>% 
-  drop_na(CO2.Ausstoß_g.pro.km) %>% 
-  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Hubraumgröße) %>% 
-  mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
-  ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Hubraumgröße)) +
-  geom_line() +
-  labs(
-    title = "CO2-Ausstoß nach Baureihenstart gruppiert nach Hubraumgröße (Verbrennermotor)",
-    y = "CO2-Ausstoß in g/km",
-    color = "ccm"
-  ) +
-  scale_color_discrete(labels = c("<1500", "1500-2000", "2000-3000", "3000<"))
-```
+------------------------------------------------------------------
 
 Thema 6
 
 Länge, Breite, Höhe -> Größe/Volumen: Gibt das Volumen des Autos in mm^3/m^3 an.
-Anschauen mit: Modellstart (Autos werden immer größer), Hubraumgröße, CO2-Ausstoß, PS, Treibstoffverbrauch (bei Alex)
+Anschauen mit: Modellstart (Autos werden immer größer), CO2-Ausstoß, PS, Treibstoffverbrauch 
 +
 Leergewicht..EU.: Gibt das Leergewicht des Autos in kg an.
 Anschauen mit: Verbrauch, Modellstart, CO2-Effizienzklasse, CO2-Ausstoß
@@ -554,6 +299,7 @@ data %>% mutate(Verhältniss = Leergewicht..EU.in.kg/CO2.Ausstoß_g.pro.km)%>%
        y = "kg Gewicht / g Ausstoß", 
        color = "Antriebsart")  
 ```
+
 Erkenntnisse:
 
 Autos werden immer größer unabhänig von der Marke.
@@ -563,47 +309,7 @@ Verbrauch gesunken und seit 2015 steigen bis auf SUV, VAN und BUS diese fallen.
 Bei Hybrid der höchste Ausstoß an CO pro KG Autogewicht ????
 
 
-
-
-
-
-
-Thema 7
-
-C02.Ausstoß: Gibt den Vergleich zwischen dem CO2-Ausstoß nach Herstellerangabe und dem ADAC Ecotest an.
-Anschauen mit: Verhältnis zwischen angaben und realität (Diesel skandal sichtbar ?), Top X Marken oder deutsch ausländisch etc., Fahrzeugklasse
-+
-Verbrauch: Gibt den Vergleich zwischen dem Verbrauch nach Herstellerangabe und dem ADAC Ecotest an.
-
-```{r}
-
-```
-
-Thema 8
-
-Elektroautos:
-
-Ladezeiten: Gibt die Ladezeiten der Elektroautos bis zu 100% in Minuten für verschiedene Anschlüsse an.
-Anschauen mit: Batteriekapazität, Modellstart, Marke
-+
-Reichweite.WLTP..elektrisch.: Gibt die Reichweite für Elektroautos in km an.
-Anschauen mit: Batteriekapazität, Modellstart, Marke (Vergleich mit der Reichweite von Verbrenner (muss berechnet werden))
-+
-Batteriekapazität..Netto..in.kWh: Gibt die Batteriekapazität der Autos in kWh an. (Hauptsächlich interessant für Elektroautos)
-Anschauen mit: Modellstart, Marke
-      
-```{r}
-
-```
-
-Thema 9
-
-Sicherheitsaspekte: Gibt die Anzahl an eingebauten Sicherheitsfeatures des Autos an. (Muss noch erstellt werden aus allen möglichen Spalten)
-Anschauen mit: Modellstart, Marke, enthalten oder gegen Aufpreis 
-
-```{r}
-
-```
+------------------------------------------------------------------
 
 Thema 10
 
@@ -650,48 +356,3 @@ Erkenntnisse:
 Höhepunkt der mangelhaften Modelle bei 2005 bei ca. 10 Stück dabei die deutschen Marken die meisten. 
 Generell fallen die Anzahl der Mängel pro Jahr seit 2012.
 Bei Hybrid und Elektor konstant ca. 2-3 Modelle pro Jahr bei Verbrenner ca. 10 bis max 17 im Jahr 2008 weil Warnung der USA wegen fälschung der Abgaswerte. 
-
-
-----------------------------------------------
-Variablen 
-
-
-1.  Marke: Gibt den Hersteller des Autos an.
-
-2.  Modellstart/Baureihenstart: Gibt an, wann das Modell angefangen wurde, produziert zu werden.
-
-3.  CO2-Effizienzklasse: Gibt die CO2-Effizienzklasse des Autos an.
-
-4.  Grundpreis: Gibt den Preis des Autos in Euro an.
-
-5.  Motorart: Gibt die Motorart des Autos an. (Vllt. in allgeimeine Werte umwandeln, z.B. Verbrenner, Elektro, etc.)
-
-6.  Leistung.maximal.in.PS..Systemleistung.: Gibt die maximale PS des Autos an.  # Vllt. in kW angeben, da das die offizielle Angabe ist?
-
-7.  Hubraum..Verbrennungsmotor. / Hubraum: Gibt die Hubraumgröße des Motors des Autos in ccm an.
-
-8.  Länge, Breite, Höhe -> Größe/Volumen: Gibt das Volumen des Autos in mm^3/m^3 an.
-
-9.  Leergewicht..EU.: Gibt das Leergewicht des Autos in kg an.
-
-10. Fahrzeugklasse: Gibt die Klasse des Autos an.
-
-11. Höchstgeschwindigkeit: Gibt die Höchstgeschwindigkeit des Autos in km/h an.
-
-12. Verbrauch.Gesamt..NEFZ.: Gibt den Gesamtverbrauch des Autos in l/100km oder kg/100km oder kWh/100km an.
-
-13. CO2.Wert..NEFZ.: Gibt den CO2-Ausstoß des Autos in g/km an.
-
-14. CO2.Ausstoß: Gibt den Vergleich zwischen dem CO2-Ausstoß nach Herstellerangabe und dem ADAC Ecotest an.
-
-15. Verbrauch: Gibt den Vergleich zwischen dem Verbrauch nach Herstellerangabe und dem ADAC Ecotest an.
-
-16. Ladezeiten: Gibt die Ladezeiten der Elektroautos bis zu 100% in Minuten für verschiedene Anschlüsse an.
-
-17. Reichweite.WLTP..elektrisch.: Gibt die Reichweite für Elektroautos in km an.
-
-18. Batteriekapazität..Netto..in.kWh: Gibt die Batteriekapazität der Autos in kWh an. 
-
-19. Sicherheitsaspekte: Gibt die Anzahl an eingebauten Sicherheitsfeatures des Autos an. (Muss noch erstellt werden aus allen möglichen Spalten)
-
-20. Anlass : welcher Mängel aufgetreten ist 

@@ -1,6 +1,6 @@
 Fragen an Bühler: 
 
-
+-
 
 
 
@@ -28,6 +28,7 @@ Notizen:
 
 - bei der ersten Folie anmerken, dass die Daten vom ADAC ausgewählt wurden 
 
+- letzte Slide Summary mit links zu den einzelnen Folien 
 
 
 

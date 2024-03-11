@@ -43,7 +43,7 @@ data <- data %>%
 # Motorarten zusammenfassen (z.B. alle Hybridarten zu Hybrid)
 data <- data %>% 
   mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid", Motorart),
-         Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas")))
+         Motorart = ifelse(Motorart %in% c("Diesel", "Otto", "Wankel"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas")))
   
 
 # Hubraum..Verbrennungsmotor. zu numeric machen
@@ -64,6 +64,36 @@ data <- data %>%
   mutate(Leergewicht..EU. = gsub(" kg$", "", Leergewicht..EU.),
          Leergewicht..EU. = as.numeric(Leergewicht..EU.)) %>% 
   rename(Leergewicht..EU.in.kg = Leergewicht..EU.)
+
+# C02.Ausstoß zum ADAC-Ecotest Wert transfomieren und zu numeric machen
+data <- data %>% 
+  mutate(C02.Ausstoß = gsub("n.b.", "-", C02.Ausstoß),
+         C02.Ausstoß = gsub(" g pro km\\(.*\\)", "", C02.Ausstoß),
+         C02.Ausstoß = gsub("[[:digit:]-]+ / ", "", C02.Ausstoß),
+         C02.Ausstoß = as.numeric(C02.Ausstoß)) %>% 
+  rename(CO2.ADAC.Test = C02.Ausstoß)
+
+# Gesamtpunktzahl zu numeric machen
+data <- data %>% 
+  mutate(Gesamtpunktzahl = gsub(" Punkte", "", Gesamtpunktzahl),
+         Gesamtpunktzahl = as.numeric(Gesamtpunktzahl))
+
+# Grundpreis zu numeric machen
+data <- data %>% 
+  mutate(Grundpreis = gsub(" Euro", "", Grundpreis),
+         Grundpreis = ifelse(Grundpreis == "-", NA, Grundpreis),
+         Grundpreis = as.numeric(Grundpreis))
+
+# Reichweite.WLTP..elektrisch. zu numeric machen
+data <- data %>% 
+  mutate(Reichweite.WLTP..elektrisch. = gsub(" km", "", Reichweite.WLTP..elektrisch.),
+         Reichweite.WLTP..elektrisch. = as.numeric(Reichweite.WLTP..elektrisch.)) %>% 
+  rename(Reichweite.elektrisch.in.km = Reichweite.WLTP..elektrisch.)
+
+#Batteriekapazität..Netto..in.kWh zu numeric machen
+data <- data %>% 
+  mutate(Batteriekapazität..Netto..in.kWh = gsub(",", ".", Batteriekapazität..Netto..in.kWh),
+         Batteriekapazität..Netto..in.kWh = as.numeric(Batteriekapazität..Netto..in.kWh))
 ```
 
 #### Marke
@@ -184,6 +214,8 @@ data %>%
     y = "relative Häufigkeit"
   )
 ```
+Man erkennt, dass es insgesamt noch mehr Autos mit Verbrennermotor gibt, die getestet wurden.
+Man kann auch erkennen, dass es seit ca. 2018 eine starke relative Steigerung der Elektro/Gas Autos gibt, die vom ADAC getestet wurden.
 
 #### Leistung in PS und Baureihenstart, CO2-Ausstoß, Motorart
 
@@ -269,7 +301,7 @@ data %>%
   ) +
   scale_color_discrete(labels = c("<120", "120-180", "180-300", "300<"))
 
-# Verhältniss von Gewicht zu Leistung nach Baureihenstart gruppiert gruppiert nach Motorart
+# Verhältniss von Gewicht zu Leistung nach Baureihenstart gruppiert nach Motorart
 data %>%
   drop_na(Leergewicht..EU.in.kg) %>% 
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Motorart) %>% 
@@ -278,10 +310,14 @@ data %>%
   geom_smooth(method = "loess", se = FALSE) + 
   labs(
     title = "Leistungsgewicht abhängig von Motorart",
-    y = "Leistungsgewicht in kg/PS",
-    color = "Motorart"
+    y = "Leistungsgewicht in kg/PS"
   )
 ```
+Man erkennt, dass die PS mit der Zeit immer weiter gestiegen ist.
+Zudem erkennt man , dass es bei ca. 300 PS keine lineare Steigung des CO2-Ausstoßes im Vergleich mit der PS gibt.
+Man erkennt auch, dass seit ca. 2015, die getesteten Elektro/Gas Autos einen sehr starken PS Anstieg haben.
+Zudem kann man erkennen, dass der Abfall des CO2-Ausstoßes bei Autos mit 300< PS am größten ist.
+Man erkennt auch, dass seit ca. 2012 das Leistungsgewicht bei den getesteten Elektro/Gas Autos stark gesunklen ist.
 
 #### Hubraumgröße und Modellstart, CO2-Ausstoß, Treibstoffverbrauch
 
@@ -343,4 +379,272 @@ data %>%
   ) +
   scale_color_discrete(labels = c("<1500", "1500-2000", "2000-3000", "3000<"))
 ```
+Man erkennt, dass die durschnittliche Hubraumgröße über die Zeit gesunken ist.
+Man sieht, dass der CO2-Ausstoß im Vergleich mit der Hubraumgröße nicht linear ist und bei ca. 2200 ccm nicht mehr so stark ansteigt.
+Man kann auch ungefähr dasselbe beim Treibstoffverbrauch erkennen.
 
+#### CO2-Ausstoß ADAC-Ecotest Daten mit Herstellerangeben vergleichen
+
+```{r}
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Verhältnis = CO2.ADAC.Test / CO2.Ausstoß_g.pro.km) %>% 
+  ggplot(aes(x = CO2.Verhältnis)) +
+  geom_density() +
+  geom_vline(xintercept = 1, color = "red") +
+  labs(
+    title = "Verteilung vom Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe",
+    x = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
+  )
+
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Baureihenstart
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Verhältnis = CO2.ADAC.Test / CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% 
+  mutate(CO2.Verhältnis = mean(CO2.Verhältnis)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Verhältnis)) +
+  geom_line() +
+  labs(
+    title = "Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Baureihenstart",
+    y = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
+  )
+```
+Man erkennt, dass die meisten getesteten Autos mehr CO2 ausstoßen, als der Hersteller angibt. (Meistens nur knapp über 1)
+Man erkennt, dass es mit der Zeit einen Anstieg des Verhältnisses gab, vorallem seit ca. 2017, bei den getesteten Autos. Also die Angaben der Hersteller werden immer "falscher".
+
+
+#### Variablen mit Gesamtpunktzahl vergleichen
+
+```{r}
+# Verteilung der Gesamtpunktzahl (geom_bar)
+ggplot(data, aes(x = Gesamtpunktzahl)) +
+  geom_bar() +
+  labs(
+    title = "Verteilung der Gesamtpunktzahl",
+    y = "Anzahl"
+  )
+
+# Verteilung der Gesamtpunktzahl (geom_boxplot)
+ggplot(data, aes(x = Gesamtpunktzahl)) +
+  geom_boxplot() +
+  labs(
+    title = "Verteilung der Gesamtpunktzahl"
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+
+# Gesamtpunktzahl nach deutscher.Hersteller
+data %>% 
+  group_by(deutscher.Hersteller) %>% 
+  summarise(Gesamtpunktzahl = mean(Gesamtpunktzahl)) %>% 
+  ggplot(aes(x = deutscher.Hersteller, y = Gesamtpunktzahl)) +
+  geom_col() +
+  labs(
+    title = "Vergleich zwischen deutschen und ausländischen Herstellern",
+    x = "Hersteller",
+    y = "durchschnittliche Gesamtpunktzahl"
+  )
+
+# Gesamtpunktzahl nach deutscher.Hersteller (geom_boxplot)
+data %>% 
+  ggplot(aes(x = deutscher.Hersteller, y = Gesamtpunktzahl)) +
+  geom_boxplot() +
+  labs(
+    title = "Vergleich zwischen deutschen und ausländischen Herstellern",
+    x = "Hersteller"
+  )
+
+# CO2-Ausstoß nach Gesamtpunktzahl
+data %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(CO2.Ausstoß_g.pro.km = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = CO2.Ausstoß_g.pro.km)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "CO2-Ausstoß nach Gesamtpunktzahl",
+    y = "CO2-Ausstoß in g/km"
+  )
+
+# Gesamtpunktzahl nach CO2-Effizienzklasse
+data %>% 
+  drop_na(CO2.Effizienzklasse) %>% 
+  group_by(CO2.Effizienzklasse) %>% 
+  summarise(Gesamtpunktzahl = mean(Gesamtpunktzahl)) %>% 
+  ggplot(aes(x = fct_relevel(CO2.Effizienzklasse, "A+"), y = Gesamtpunktzahl)) +
+  geom_col() +
+  labs(
+    title = "Durschnittliche Gesamtpunktzahl nach CO2-Effizienzklasse",
+    x = "CO2-Effizienzklasse",
+    y = "durchschnittliche Gesamtpunktzahl"
+  )
+
+# Gesamtpunktzahl nach CO2-Effizienzklasse (geom_boxplot)
+data %>% 
+  drop_na(CO2.Effizienzklasse) %>% 
+  ggplot(aes(x = fct_relevel(CO2.Effizienzklasse, "A+"), y = Gesamtpunktzahl)) +
+  geom_boxplot() +
+  labs(
+    title = "Gesamtpunktzahl nach CO2-Effizienzklasse",
+    x = "CO2-Effizienzklasse",
+    y = "Gesamtpunktzahl"
+  )
+
+# Gesamtpunktzahl nach Motorart
+data %>% 
+  group_by(Motorart) %>% 
+  summarise(Gesamtpunktzahl = mean(Gesamtpunktzahl)) %>% 
+  ggplot(aes(x = Motorart, y = Gesamtpunktzahl)) +
+  geom_col() +
+  labs(
+    title = "Durschnittliche Gesamtpunktzahl nach Motorart",
+    y = "durchschnittliche Gesamtpunktzahl"
+  )
+
+# Gesamtpunktzahl nach Motorart (geom_boxplot)
+data %>% 
+  ggplot(aes(x = Motorart, y = Gesamtpunktzahl)) +
+  geom_boxplot() +
+  labs(
+    title = "Gesamtpunktzahl nach Motorart",
+    y = "Gesamtpunktzahl"
+  )
+
+# Leistung nach Gesamtpunktzahl
+data %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(Leistung.maximal.in.PS..Systemleistung. = mean(Leistung.maximal.in.PS..Systemleistung.)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Leistung.maximal.in.PS..Systemleistung.)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Leistung nach Gesamtpunktzahl",
+    y = "Leistung in PS"
+  )
+
+# Verhältniss von Gewicht zu Leistung nach Gesamtpunktzahl gruppiert nach Motorart
+data %>%
+  drop_na(Leergewicht..EU.in.kg) %>% 
+  mutate(Verhältnis = Leergewicht..EU.in.kg / Leistung.maximal.in.PS..Systemleistung.) %>% 
+  group_by(Gesamtpunktzahl, Motorart) %>% 
+  mutate(Verhältnis = mean(Verhältnis)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Verhältnis)) + 
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  facet_wrap(~Motorart) +
+  labs(
+    title = "Leistungsgewicht nach Gesamtpunktzahl abhängig von Motorart",
+    y = "Leistungsgewicht in kg/PS"
+  )
+
+# Hubraumgröße nach Gesamtpunktzahl
+data %>% 
+  drop_na(Hubraumgröße) %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(Hubraumgröße = mean(Hubraumgröße)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Hubraumgröße)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Hubraumgröße nach Gesamtpunktzahl",
+    y = "Hubraumgröße in ccm"
+  )
+
+# Treibstoffverbrauch nach Gesamtpunktzahl
+data %>% 
+  drop_na(Verbrauch.gesamt.in.l.kg.kWh_100Km) %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(Verbrauch.gesamt.in.l.kg.kWh_100Km = mean(Verbrauch.gesamt.in.l.kg.kWh_100Km)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Verbrauch.gesamt.in.l.kg.kWh_100Km)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Treibstoffverbrauch nach Gesamtpunktzahl",
+    y = "Treibstoffverbrauch"
+  )
+
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Gesamtpunktzahl
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Verhältnis = CO2.ADAC.Test / CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(CO2.Verhältnis = mean(CO2.Verhältnis)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = CO2.Verhältnis)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Gesamtpunktzahl",
+    y = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
+  )
+
+# Grundpreis nach Gesamtpunktzahl
+data %>% 
+  drop_na(Grundpreis) %>% 
+  group_by(Gesamtpunktzahl, Motorart) %>% 
+  mutate(Grundpreis = mean(Grundpreis)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Grundpreis)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Grundpreis nach Gesamtpunktzahl",
+    y = "Grundpreis in Euro"
+  )
+
+# Grundpreis nach Gesamtpunktzahl gruppiert nach Motorart
+data %>% 
+  drop_na(Grundpreis) %>% 
+  group_by(Gesamtpunktzahl, Motorart) %>% 
+  mutate(Grundpreis = mean(Grundpreis)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Grundpreis)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  facet_wrap(~Motorart) +
+  labs(
+    title = "Grundpreis nach Gesamtpunktzahl gruppiert nach Motorart",
+    y = "Grundpreis in Euro"
+  )
+
+# Reichweite nach Gesamtpunktzahl für Elektroautos
+data %>% 
+  drop_na(Reichweite.elektrisch.in.km) %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(Reichweite.elektrisch.in.km = mean(Reichweite.elektrisch.in.km)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Reichweite.elektrisch.in.km)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Reichweite nach Gesamtpunktzahl für Elektroautos",
+    y = "Reichweite in km"
+  )
+
+# Batteriekapazität nach Gesamtpunktzahl für Elektroautos
+data %>% 
+  drop_na(Batteriekapazität..Netto..in.kWh) %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(Batteriekapazität..Netto..in.kWh = mean(Batteriekapazität..Netto..in.kWh)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Batteriekapazität..Netto..in.kWh)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Batteriekapazität nach Gesamtpunktzahl für Elektroautos",
+    y = "Batteriekapazität in kWh"
+  )
+```
+Man erkennt, dass die meisten vergebenen Gesamtpunktzahlen zwischen 57/58 und 75 liegen.
+Man erkennt, dass es einen Zusammenhang zwischen CO2-Ausstoß und Gesamtpunktzahl gibt. Umso geringer der Ausstoß, desto höher die Punktzahl. (quadratisch?)
+Man erkennt, dass die durschnittliche Gesamtpunktzahl für jede schlechtere CO2-Effizienzklasse geringer wird.
+Man erkennt, dass Elektro/Gas Autos eine höhere durschnittliche Gesamtpunktzahl haben, als Hybrid/Verbrenner Autos.
+Man erkennt, dass es einen Zusammenhang zwischen Leistungsgewicht und Gesamtpunktzahl bei Elektro/Gas und Hybrid Autos gibt.
+Bei Elektro/Gas ist, umso geringer das Leistungsgewicht, desto höher die Punktzahl.
+Bei Hybrid ist, umso höher das Leistungsgewicht, desto höher die Punktzahl.
+Man erkennt, dass es einen Zusammenhang zwischen Reichweite von Elektroautos und der GEsamtpunktzahl gibt.
+Tendenziell hat eine höhere Reichweite eine höhere Punktzahl, wobei es bei sehr hohen Punktzahlen nicht mehr unbedingt stimmt.
+Denselben Zusammenhang kann man auch zwischen der Batteriekapazität von Elektroautos und der Gesamtpunktzahl erkennen.
