@@ -51,6 +51,12 @@ durchschnitt_deutsche_autos <- deutsche_autos_gefiltert%>%
   group_by(Jahr) %>%
   summarise(durchscnitt_ADAC_Ekotest = mean(C02.Ausstoß.ADAC, na.rm = TRUE),
             durchschnit_Herstellerangaben = mean(C02.Ausstoß.Hersteller, na.rm = TRUE))
+#durschnitts gefiltert ausländische autos
+durchschnitt_ausländische_autos <- ausländische_autos_gefiltert%>%
+  group_by(Jahr) %>%
+  summarise(durchscnitt_ADAC_Ekotest = mean(C02.Ausstoß.ADAC, na.rm = TRUE),
+            durchschnit_Herstellerangaben = mean(C02.Ausstoß.Hersteller, na.rm = TRUE))
+
 
 #Graphik durschnitt deutsche Autos 
  Durschnitts_Graphik_deutsch <- ggplot(durchschnitt_deutsche_autos, aes(x = Jahr)) +
@@ -81,3 +87,12 @@ Graphik_ausländisch  <-ggplot(ausländische_autos_gefiltert , aes(x = Baureihen
                      name = "Legende") +
   theme_minimal()
 Graphik_ausländisch
+#Graphik durschnitt ausländische Autos 
+Durschnitts_Graphik_ausländisch <- ggplot(durchschnitt_ausländische_autos, aes(x = Jahr)) +
+  geom_line(aes(y = durchscnitt_ADAC_Ekotest, color = "ADAC")) +
+  geom_line(aes(y = durchschnit_Herstellerangaben, color = "Hersteller")) +
+  labs(x = "Jahr", y = "Durchschnittlicher CO2-Ausstoß", title = "Durchschnittlicher CO2-Ausstoß von ADAC und Hersteller Ekotest über die Zeit bei ausländische Autos ") +
+  scale_color_manual(values = c("ADAC" = "blue", "Hersteller" = "red"),
+                     name = "Datenquelle") +
+  theme_minimal()
+Durschnitts_Graphik_ausländisch
