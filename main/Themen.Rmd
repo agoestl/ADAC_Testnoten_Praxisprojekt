@@ -576,6 +576,32 @@ Anschauen mit: Verhältnis zwischen angaben und realität (Diesel skandal sichtb
 Verbrauch: Gibt den Vergleich zwischen dem Verbrauch nach Herstellerangabe und dem ADAC Ecotest an.
 
 ```{r}
+#CO2 Ausstoß in 2 Spalten teilen (Hersteelerangabe und ADAC ecotest)
+
+data$C02.Ausstoß <- gsub("g pro km", "", data$C02.Ausstoß)
+data$C02.Ausstoß <- gsub("\\(.*\\)","", data$C02.Ausstoß)
+
+data <- data %>%
+  mutate(spalten_getrennt = strsplit(data$C02.Ausstoß, "/")) %>%
+  mutate(C02.Ausstoß.Hersteller = sapply(spalten_getrennt, `[`, 1),
+         C02.Ausstoß.ADAC = sapply(spalten_getrennt, `[`, 2)) %>%
+  select(-spalten_getrennt)  %>%
+mutate(across(c(C02.Ausstoß.Hersteller, C02.Ausstoß.ADAC), as.numeric))
+# Daten in dennen es ein wert Für Adac Ekotest und für den Herstellerangabe gibt ( damit mann es fair vergleichen kann).
+gefilterte_daten <- data %>% filter(!is.na(C02.Ausstoß.Hersteller) & !is.na(C02.Ausstoß.ADAC))
+deutsche_autos_gefiltert <- gefilterte_daten %>% filter( deutscher.Hersteller == "deutsch")
+# Graphik deutsche Autos
+
+ Graphik_deutsch <- ggplot(deutsche_autos_gefiltert , aes(x = Baureihenstart,  )) + 
+   geom_line(aes(y = C02.Ausstoß.ADAC, color = "ADAC Ekotest")) +
+geom_line(aes(y = C02.Ausstoß.Hersteller , color = "Herstellerangaben")) +
+  labs( x = "Bauenreihenstart", y= "C02 Ausstoß(g/km) " , title = "CO2-Ausstoß von Herstellerangaben und ADAC Ekotest über die Zeit bei deutschen Autos") +
+  scale_color_manual(values = c("ADAC Ekotest" = "blue", "Herstellerangaben" = "red"),
+                     labels = c("ADAC Ekotest", "Herstellerangaben"),
+                     name = "Legende") +
+  theme_minimal()
+ Graphik_deutsch
+
 
 ```
 
