@@ -17,6 +17,8 @@ data %>%
   count(Marke) %>%
   top_n(5, n) %>%
   pull(Marke) -> top_Marken
+#Jahres durschnitt
+data$Jahr <- year(ymd(data$Baureihenstart))
 #CO2 Ausstoß in 2 Spalten teilen (Hersteelerangabe und ADAC ecotest)
 
 data$C02.Ausstoß <- gsub("g pro km", "", data$C02.Ausstoß)
@@ -32,13 +34,34 @@ mutate(across(c(C02.Ausstoß.Hersteller, C02.Ausstoß.ADAC), as.numeric))
 gefilterte_daten <- data %>% filter(!is.na(C02.Ausstoß.Hersteller) & !is.na(C02.Ausstoß.ADAC))
 #deutsche Autos
 deutsche_autos <- data %>% filter( deutscher.Hersteller == "deutsch")
-# top deutscher Hersteller 
-data %>% filter(top_deutscher.Hersteller == "deutsch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_deutsche_Marken
+
 # ausländische  Autos (gefiltert)
 ausländische_autos_gefiltert <- gefilterte_daten %>% filter( deutscher.Hersteller == "ausländisch")
-
-# Graphik deutsche Autos
+#deutsche autos gefiltert
 deutsche_autos_gefiltert <- gefilterte_daten %>% filter( deutscher.Hersteller == "deutsch")
+
+#durschnitts Werte 
+
+durchschnitt <- data %>%
+  group_by(Jahr) %>%
+  summarise(durchscnitt_ADAC_Ekotest = mean(C02.Ausstoß.ADAC, na.rm = TRUE),
+            durchschnit_Herstellerangaben = mean(C02.Ausstoß.Hersteller, na.rm = TRUE))
+#durschnitts gefiltert deutsche autos
+durchschnitt_deutsche_autos <- deutsche_autos_gefiltert%>%
+  group_by(Jahr) %>%
+  summarise(durchscnitt_ADAC_Ekotest = mean(C02.Ausstoß.ADAC, na.rm = TRUE),
+            durchschnit_Herstellerangaben = mean(C02.Ausstoß.Hersteller, na.rm = TRUE))
+
+#Graphik durschnitt deutsche Autos 
+ggplot(durchschnitt_deutsche_autos, aes(x = Jahr)) +
+  geom_line(aes(y = durchscnitt_ADAC_Ekotest, color = "ADAC")) +
+  geom_line(aes(y = durchschnit_Herstellerangaben, color = "Hersteller")) +
+  labs(x = "Jahr", y = "Durchschnittlicher CO2-Ausstoß", title = "Durchschnittlicher CO2-Ausstoß von ADAC und Hersteller Ekotest über die Zeit bei deutschen Autos ") +
+  scale_color_manual(values = c("ADAC" = "blue", "Hersteller" = "red"),
+                     name = "Datenquelle") +
+  theme_minimal()
+# Graphik deutsche Autos
+
  Graphik_deutsch <- ggplot(deutsche_autos_gefiltert , aes(x = Baureihenstart,  )) + 
    geom_line(aes(y = C02.Ausstoß.ADAC, color = "ADAC Ekotest")) +
 geom_line(aes(y = C02.Ausstoß.Hersteller , color = "Herstellerangaben")) +
