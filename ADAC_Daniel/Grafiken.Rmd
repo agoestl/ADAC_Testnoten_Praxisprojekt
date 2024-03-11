@@ -412,6 +412,29 @@ data %>%
     title = "Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Baureihenstart",
     y = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
   )
+
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe (zwei Linien)
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), deutscher.Hersteller) %>% 
+  mutate(CO2.ADAC.Test = mean(CO2.ADAC.Test),
+         CO2.Ausstoß_g.pro.km = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart)) +
+  geom_line(aes(y = CO2.ADAC.Test, color = "red")) +
+  geom_line(aes(y = CO2.Ausstoß_g.pro.km, color = "blue")) +
+  facet_wrap(~deutscher.Hersteller)
+
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe (zwei Linien)
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% 
+  mutate(CO2.ADAC.Test = mean(CO2.ADAC.Test),
+         CO2.Ausstoß_g.pro.km = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart)) +
+  geom_line(aes(y = CO2.ADAC.Test, color = "red")) +
+  geom_line(aes(y = CO2.Ausstoß_g.pro.km, color = "blue"))
 ```
 Man erkennt, dass die meisten getesteten Autos mehr CO2 ausstoßen, als der Hersteller angibt. (Meistens nur knapp über 1)
 Man erkennt, dass es mit der Zeit einen Anstieg des Verhältnisses gab, vorallem seit ca. 2017, bei den getesteten Autos. Also die Angaben der Hersteller werden immer "falscher".

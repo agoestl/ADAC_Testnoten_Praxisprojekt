@@ -33,9 +33,10 @@ data <- data %>%
 
 # Motorarten zusammenfassen (z.B. alle Hybridarten zu Hybrid)
 data <- data %>% 
-  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid", Motorart),
-         Motorart = ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner", ifelse(Motorart %in% "Hybrid", "Hybrid", "Elektro/Gas")))
-  
+  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid",
+                           ifelse(Motorart %in% c("Diesel", "Otto", "Wankel"), "Verbrenner",
+                                  ifelse(grepl("Elektro", Motorart), "Elektro",
+                                         ifelse(grepl("Gas", Motorart), "Gas", "Andere")))))  
 
 # Hubraum..Verbrennungsmotor. zu numeric machen
 data <- data %>% 
@@ -55,11 +56,36 @@ data <- data %>%
   mutate(Leergewicht..EU. = gsub(" kg$", "", Leergewicht..EU.),
          Leergewicht..EU. = as.numeric(Leergewicht..EU.)) %>% 
   rename(Leergewicht..EU.in.kg = Leergewicht..EU.)
-```
 
-```{r} 
-########### Alex Variablen ########### 
+# C02.Ausstoß zum ADAC-Ecotest Wert transfomieren und zu numeric machen
+data <- data %>% 
+  mutate(C02.Ausstoß = gsub("n.b.", "-", C02.Ausstoß),
+         C02.Ausstoß = gsub(" g pro km\\(.*\\)", "", C02.Ausstoß),
+         C02.Ausstoß = gsub("[[:digit:]-]+ / ", "", C02.Ausstoß),
+         C02.Ausstoß = as.numeric(C02.Ausstoß)) %>% 
+  rename(CO2.ADAC.Test = C02.Ausstoß)
 
+# Gesamtpunktzahl zu numeric machen
+data <- data %>% 
+  mutate(Gesamtpunktzahl = gsub(" Punkte", "", Gesamtpunktzahl),
+         Gesamtpunktzahl = as.numeric(Gesamtpunktzahl))
+
+# Grundpreis zu numeric machen
+data <- data %>% 
+  mutate(Grundpreis = gsub(" Euro", "", Grundpreis),
+         Grundpreis = ifelse(Grundpreis == "-", NA, Grundpreis),
+         Grundpreis = as.numeric(Grundpreis))
+
+# Reichweite.WLTP..elektrisch. zu numeric machen
+data <- data %>% 
+  mutate(Reichweite.WLTP..elektrisch. = gsub(" km", "", Reichweite.WLTP..elektrisch.),
+         Reichweite.WLTP..elektrisch. = as.numeric(Reichweite.WLTP..elektrisch.)) %>% 
+  rename(Reichweite.elektrisch.in.km = Reichweite.WLTP..elektrisch.)
+
+#Batteriekapazität..Netto..in.kWh zu numeric machen
+data <- data %>% 
+  mutate(Batteriekapazität..Netto..in.kWh = gsub(",", ".", Batteriekapazität..Netto..in.kWh),
+         Batteriekapazität..Netto..in.kWh = as.numeric(Batteriekapazität..Netto..in.kWh))
 
 #top n marken rausfiltern 
 data %>%
@@ -87,11 +113,6 @@ data %>% filter(europäischer.Hersteller != "europäisch") %>% select(Marke) %>%
 data %>% filter(europäischer.Hersteller == "europäisch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_europäische_Marken
 eu_nicht_eu_marken <- c(top_europäische_Marken, top_nicht_europäische_Marken)
 
-# remove Euro + set as numeric für Grundpreis
-data <- data %>% 
-  mutate(Grundpreis = gsub(" Euro$", "", Grundpreis)) %>% 
-  mutate(Grundpreis = as.numeric(Grundpreis))
- 
 # remove Euro + set as numeric für Laufende Kosten
 data <- data %>% mutate(Betriebskosten = gsub(" €$", "", Betriebskosten)) %>%
   mutate(Fixkosten = gsub(" €$", "", Fixkosten)) %>%
@@ -107,7 +128,6 @@ data <- data %>% mutate(Betriebskosten = gsub(" €$", "", Betriebskosten)) %>%
   mutate(Wertverlust = as.numeric(Wertverlust))
 
 # remove mm + set as numeric für Größe 
-
 data <- data %>% mutate(Länge = gsub(" mm$", "", Länge)) %>%
                  mutate(Breite = gsub(" mm$", "", Breite)) %>%
                  mutate(Höhe = gsub(" mm$", "", Höhe)) %>% 
@@ -115,6 +135,7 @@ data <- data %>% mutate(Länge = gsub(" mm$", "", Länge)) %>%
                  mutate(Höhe = as.numeric(Höhe)) %>% 
                  mutate(Breite = as.numeric(Breite))
 
+# Interssante Karosserie
 interssante_Karosserie <- c("Coupe", "Bus", "Van", "Kombi", "Schrägheck", "SUV")
 
 # anlass vereinfachen in nullen und einsen
@@ -123,36 +144,6 @@ data <- data %>% mutate(Fehler_ja_nein = ifelse(is.na(Anlass), 0, 1))
 # in deutsche und weltweit betroffene Fahrzeuge aufteilen
 data <- data %>% mutate(Deutschlandweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "\\d+\\.\\d+"),
                         Weltweit.betroffene.Fahrzeuge = str_extract(Anzahl.betroffener.Fahrzeuge, "(?<=\\)\\s)\\d+\\.\\d+"))
-```
-
-```{r}
-######### Mark Variablen ##########
-# Baureihenstart zu Date umformatieren
-data <- data %>% 
-  mutate(Baureihenstart = as.Date(paste("01/", Baureihenstart, sep = ""), "%d/%m/%y"))
-
-# CO2-Ausstoß Spalte zu numeric machen
-data <- data %>% 
-  mutate(CO2.Wert..NEFZ. = gsub(" g/km", "", CO2.Wert..NEFZ.),
-         CO2.Wert..NEFZ. = as.numeric(CO2.Wert..NEFZ.)) %>% 
-  rename(CO2.Ausstoß_g.pro.km = CO2.Wert..NEFZ.)
-
-# Fahrzeugklasse Beispiel entfernen
-data <- data %>% 
-  mutate(Fahrzeugklasse = gsub(" +\\(.*\\)", "", Fahrzeugklasse))
-
-#Leistung.in.kW ergänzen
-data$Leistung.in.kW <- gsub(" kW", "", data$Leistung)
-data$Leistung.in.kW <- as.numeric(data$Leistung.in.kW)
-
-# Motorarten zusammenfassen (z.B. alle Hybridarten zu Hybrid)
-data <- data %>% 
-  mutate(Motorart = ifelse(grepl("Hybrid", Motorart), "Hybrid",
-                           ifelse(Motorart %in% c("Diesel", "Otto"), "Verbrenner",
-                                  ifelse(grepl("Elektro", Motorart), "Elektro",
-                                         ifelse(grepl("Gas", Motorart), "Gas", "Andere")))))
-
-
 
 #Ladezeiten collumn umschreiben
 #collumn mit einträgen von 100%: __ min. (AC Schuko 2,8 kW) erstellen
@@ -165,17 +156,6 @@ data$Ladezeiten_Schuko.2.3kW <- str_extract(data$Ladezeiten_Schuko.2.3kW, patter
 data$Ladezeiten_Schuko.2.3kW <- gsub(" ", "", data$Ladezeiten_Schuko.2.3kW)
 data$Ladezeiten_Schuko.2.3kW <- as.numeric(data$Ladezeiten_Schuko.2.3kW)
 
-#Batteriekapazität Netto zu numeric
-data <- data %>% 
-  mutate(Batteriekapazität..Netto..in.kWh = gsub(",", ".", Batteriekapazität..Netto..in.kWh),
-         Batteriekapazität..Netto..in.kWh = as.numeric(Batteriekapazität..Netto..in.kWh)) 
-
-#Reichweite.WLTP..elektrisch.
-data <- data %>% 
-  mutate(Reichweite.WLTP..elektrisch. = gsub(" km", "", Reichweite.WLTP..elektrisch.),
-         Reichweite.WLTP..elektrisch. = as.numeric(Reichweite.WLTP..elektrisch.)) %>% 
-  rename(Reichweite_elektisch_in.km = Reichweite.WLTP..elektrisch.)
-
 #Reichweite Verbrenner:
 #Verbrauch.Gesamt..NEFZ. (l/100 km) nach Verbrenner filtern
 #Tankgröße
@@ -183,18 +163,17 @@ data <- data %>%
 data2 <- data %>%
   mutate(Tankgröße = gsub(" l", "", Tankgröße),
          Tankgröße = gsub(",", ".", Tankgröße),
-         Tankgröße = as.numeric(Tankgröße),
-         Verbrauch.Gesamt..NEFZ. = gsub(",", ".", Verbrauch.Gesamt..NEFZ.),
-         Verbrauch.Gesamt..NEFZ. = gsub(" l/100 km", "", Verbrauch.Gesamt..NEFZ.),
-         Verbrauch.Gesamt..NEFZ. = as.numeric(Verbrauch.Gesamt..NEFZ.)
-         ) 
-Verbrauch_pro_km <- data2$Verbrauch.Gesamt..NEFZ. / 100
+         Tankgröße = as.numeric(Tankgröße)) 
+Verbrauch_pro_km <- data2$Verbrauch.gesamt.in.l.kg.kWh_100Km / 100
 data2$Reichweite <- data2$Tankgröße/Verbrauch_pro_km
 
 #joined collumn
-data2$Reichweite.Gesamt <- coalesce(data2$Reichweite_elektisch_in.km, data2$Reichweite)
-```
+data2$Reichweite.Gesamt <- coalesce(data2$Reichweite.elektrisch.in.km, data2$Reichweite)
 
+#Leistung.in.kW ergänzen
+data$Leistung.in.kW <- gsub(" kW", "", data$Leistung)
+data$Leistung.in.kW <- as.numeric(data$Leistung.in.kW)
+```
 
 Thema 1
 
@@ -751,33 +730,55 @@ Anschauen mit: Verhältnis zwischen angaben und realität (Diesel skandal sichtb
 Verbrauch: Gibt den Vergleich zwischen dem Verbrauch nach Herstellerangabe und dem ADAC Ecotest an.
 
 ```{r}
-#CO2 Ausstoß in 2 Spalten teilen (Hersteelerangabe und ADAC ecotest)
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Verhältnis = CO2.ADAC.Test / CO2.Ausstoß_g.pro.km) %>% 
+  ggplot(aes(x = CO2.Verhältnis)) +
+  geom_density() +
+  geom_vline(xintercept = 1, color = "red") +
+  labs(
+    title = "Verteilung vom Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe",
+    x = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
+  )
 
-data$C02.Ausstoß <- gsub("g pro km", "", data$C02.Ausstoß)
-data$C02.Ausstoß <- gsub("\\(.*\\)","", data$C02.Ausstoß)
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Baureihenstart
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  mutate(CO2.Verhältnis = CO2.ADAC.Test / CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% 
+  mutate(CO2.Verhältnis = mean(CO2.Verhältnis)) %>% 
+  ggplot(aes(x = Baureihenstart, y = CO2.Verhältnis)) +
+  geom_line() +
+  labs(
+    title = "Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe nach Baureihenstart",
+    y = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
+  )
 
-data <- data %>%
-  mutate(spalten_getrennt = strsplit(data$C02.Ausstoß, "/")) %>%
-  mutate(C02.Ausstoß.Hersteller = sapply(spalten_getrennt, `[`, 1),
-         C02.Ausstoß.ADAC = sapply(spalten_getrennt, `[`, 2)) %>%
-  select(-spalten_getrennt)  %>%
-mutate(across(c(C02.Ausstoß.Hersteller, C02.Ausstoß.ADAC), as.numeric))
-# Daten in dennen es ein wert Für Adac Ekotest und für den Herstellerangabe gibt ( damit mann es fair vergleichen kann).
-gefilterte_daten <- data %>% filter(!is.na(C02.Ausstoß.Hersteller) & !is.na(C02.Ausstoß.ADAC))
-deutsche_autos_gefiltert <- gefilterte_daten %>% filter( deutscher.Hersteller == "deutsch")
-# Graphik deutsche Autos
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe (zwei Linien)
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), deutscher.Hersteller) %>% 
+  mutate(CO2.ADAC.Test = mean(CO2.ADAC.Test),
+         CO2.Ausstoß_g.pro.km = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart)) +
+  geom_line(aes(y = CO2.ADAC.Test, color = "red")) +
+  geom_line(aes(y = CO2.Ausstoß_g.pro.km, color = "blue")) +
+  facet_wrap(~deutscher.Hersteller)
 
- Graphik_deutsch <- ggplot(deutsche_autos_gefiltert , aes(x = Baureihenstart,  )) + 
-   geom_line(aes(y = C02.Ausstoß.ADAC, color = "ADAC Ekotest")) +
-geom_line(aes(y = C02.Ausstoß.Hersteller , color = "Herstellerangaben")) +
-  labs( x = "Bauenreihenstart", y= "C02 Ausstoß(g/km) " , title = "CO2-Ausstoß von Herstellerangaben und ADAC Ekotest über die Zeit bei deutschen Autos") +
-  scale_color_manual(values = c("ADAC Ekotest" = "blue", "Herstellerangaben" = "red"),
-                     labels = c("ADAC Ekotest", "Herstellerangaben"),
-                     name = "Legende") +
-  theme_minimal()
- Graphik_deutsch
-
-
+# Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe (zwei Linien)
+data %>% 
+  filter(CO2.Ausstoß_g.pro.km != 0) %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>% 
+  mutate(CO2.ADAC.Test = mean(CO2.ADAC.Test),
+         CO2.Ausstoß_g.pro.km = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Baureihenstart)) +
+  geom_line(aes(y = CO2.ADAC.Test, color = "red")) +
+  geom_line(aes(y = CO2.Ausstoß_g.pro.km, color = "blue"))
 ```
 
 Thema 8
@@ -863,9 +864,9 @@ ggplot(aes(x = Baureihenstart, y = Ladezeiten_Schuko.2.3kW)) +
 data %>%
   filter(Motorart == "Elektro") %>%
   group_by(Batteriekapazität..Netto..in.kWh) %>% 
-  drop_na(Reichweite_elektisch_in.km) %>% 
-  summarise(Reichweite_elektisch_in.km_mean = mean(Reichweite_elektisch_in.km)) %>% 
-  ggplot(aes(x = Batteriekapazität..Netto..in.kWh, y = Reichweite_elektisch_in.km_mean)) +
+  drop_na(Reichweite.elektrisch.in.km) %>% 
+  summarise(Reichweite.elektisch.in.km_mean = mean(Reichweite.elektrisch.in.km)) %>% 
+  ggplot(aes(x = Batteriekapazität..Netto..in.kWh, y = Reichweite.elektisch.in.km_mean)) +
   geom_point() +
   geom_smooth(method = "loess", se = FALSE, color = "red") +
   labs(
@@ -878,9 +879,9 @@ data %>%
 data %>% 
   filter(Motorart == "Elektro") %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
-  drop_na(Reichweite_elektisch_in.km) %>% 
-  mutate(Reichweite_elektisch_in.km_mean = mean(Reichweite_elektisch_in.km)) %>% 
-  ggplot(aes(x = Baureihenstart, y = Reichweite_elektisch_in.km_mean)) +
+  drop_na(Reichweite.elektrisch.in.km) %>% 
+  mutate(Reichweite.elektisch.in.km_mean = mean(Reichweite.elektrisch.in.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Reichweite.elektisch.in.km_mean)) +
   geom_line() + 
   labs(
     title = "Entwicklung der durchschnittlichen Reichweite von Elektromotoren",
@@ -890,7 +891,7 @@ data %>%
 avg_Reichweite_E_Motor <- data %>%
   filter(Motorart == "Elektro") %>%
   group_by(Marke) %>%
-  summarise(avg_Reichweite_E_Motor = mean(Reichweite_elektisch_in.km, na.rm = TRUE))
+  summarise(avg_Reichweite_E_Motor = mean(Reichweite.elektrisch.in.km, na.rm = TRUE))
 
 avg_Reichweite_E_Motor <- drop_na(avg_Reichweite_E_Motor)
 
@@ -902,8 +903,8 @@ ggplot(avg_Reichweite_E_Motor, aes(x = Marke, y = avg_Reichweite_E_Motor)) +
 
 data %>% 
   filter(Motorart == "Elektro") %>%
-  drop_na(Reichweite_elektisch_in.km) %>% 
-ggplot(aes(x = Marke, y = Reichweite_elektisch_in.km)) +
+  drop_na(Reichweite.elektrisch.in.km) %>% 
+ggplot(aes(x = Marke, y = Reichweite.elektrisch.in.km)) +
   geom_bar(position='dodge', stat='summary', fun='mean') +
   geom_text(aes(label=..count..), y=0, stat='count', colour="red", size=4) +
   labs(x = "Marke", y = "Durchschnittliche Reichweite", title = "Durschnittliche Reichweite der E-Motoren nach Marke") +
@@ -916,9 +917,9 @@ data %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
   mutate(Anzahl.Jahr = n()) %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Marke) %>%
-  drop_na(Reichweite_elektisch_in.km) %>% 
-  mutate(Reichweite_elektisch_in.km_mean = mean(Reichweite_elektisch_in.km)) %>% 
-  ggplot(aes(x = Baureihenstart, y = Reichweite_elektisch_in.km_mean, color = Marke)) + 
+  drop_na(Reichweite.elektrisch.in.km) %>% 
+  mutate(Reichweite.elektisch.in.km_mean = mean(Reichweite.elektrisch.in.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Reichweite.elektisch.in.km_mean, color = Marke)) + 
   geom_line() + 
   geom_smooth(method = "loess", se = FALSE, color = "red") +
   labs(title = "Reichweite über Zeit der E-Motoren nach Marke", x = "Baureihenstart", y = "Reichweite", color = "Marke")
@@ -930,9 +931,9 @@ data %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
   mutate(Anzahl.Jahr = n()) %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Marke) %>%
-  drop_na(Reichweite_elektisch_in.km) %>% 
-  mutate(Reichweite_elektisch_in.km_mean = mean(Reichweite_elektisch_in.km)) %>% 
-  ggplot(aes(x = Baureihenstart, y = Reichweite_elektisch_in.km_mean, color = Marke)) + 
+  drop_na(Reichweite.elektrisch.in.km) %>% 
+  mutate(Reichweite.elektisch.in.km_mean = mean(Reichweite.elektrisch.in.km)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Reichweite.elektisch.in.km_mean, color = Marke)) + 
   geom_point() + 
   geom_smooth(method = "loess", se = FALSE, color = "red") +
   labs(title = "Reichweite über Zeit der E-Motoren nach spezifischen Marken", x = "Baureihenstart", y = "Reichweite", color = "Marke")
@@ -1012,17 +1013,6 @@ data %>% group_by(Motorart, Baureihenstart) %>%
        x = "Zeit", 
        y = "Anzahl mangelhafter Modelle", 
        color = "Antriebsart")
-
-# Verhältniss der betroffenen Modelle welt und deutschland weit über die Zeit 
-
-data %>% ggplot(aes(x = Baureihenstart)) +
-  geom_smooth(aes(y = Deutschlandweit.betroffene.Fahrzeuge, fill = "Deutschland"), method = "loess", se = FALSE,span = 2) +
-  geom_smooth(aes(y = Weltweit.betroffene.Fahrzeuge, fill = "Weltweit"), method = "loess", se = FALSE, span = 2) +
-  labs(title = "Deutschland vs. Weltweit over Time",
-       x = "Zeit",
-       y = "Anzahl an betroffenen Fahrzeugen") +
-  scale_fill_manual(values = c("Deutschland" = "blue", "Weltweit" = "red")) +
-  theme_minimal()
 ```
 Erkenntnisse:
 
