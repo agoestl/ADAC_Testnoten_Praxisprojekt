@@ -53,7 +53,7 @@ durchschnitt_deutsche_autos <- deutsche_autos_gefiltert%>%
             durchschnit_Herstellerangaben = mean(C02.Ausstoß.Hersteller, na.rm = TRUE))
 
 #Graphik durschnitt deutsche Autos 
-ggplot(durchschnitt_deutsche_autos, aes(x = Jahr)) +
+ Durschnitts_Graphik_deutsch <- ggplot(durchschnitt_deutsche_autos, aes(x = Jahr)) +
   geom_line(aes(y = durchscnitt_ADAC_Ekotest, color = "ADAC")) +
   geom_line(aes(y = durchschnit_Herstellerangaben, color = "Hersteller")) +
   labs(x = "Jahr", y = "Durchschnittlicher CO2-Ausstoß", title = "Durchschnittlicher CO2-Ausstoß von ADAC und Hersteller Ekotest über die Zeit bei deutschen Autos ") +
