@@ -34,10 +34,12 @@ gefilterte_daten <- data %>% filter(!is.na(C02.Ausstoß.Hersteller) & !is.na(C02
 deutsche_autos <- data %>% filter( deutscher.Hersteller == "deutsch")
 # top deutscher Hersteller 
 data %>% filter(top_deutscher.Hersteller == "deutsch") %>% select(Marke) %>% count(Marke) %>% top_n(3, n) %>% pull(Marke) -> top_deutsche_Marken
+# ausländische  Autos (gefiltert)
+ausländische_autos_gefiltert <- gefilterte_daten %>% filter( deutscher.Hersteller == "ausländisch")
 
-# Graphik
+# Graphik deutsche Autos
 deutsche_autos_gefiltert <- gefilterte_daten %>% filter( deutscher.Hersteller == "deutsch")
-ggplot(deutsche_autos_gefiltert , aes(x = Baureihenstart,  )) + 
+ Graphik_deutsch <- ggplot(deutsche_autos_gefiltert , aes(x = Baureihenstart,  )) + 
    geom_line(aes(y = C02.Ausstoß.ADAC, color = "ADAC Ekotest")) +
 geom_line(aes(y = C02.Ausstoß.Hersteller , color = "Herstellerangaben")) +
   labs( x = "Bauenreihenstart", y= "C02 Ausstoß(g/km) " , title = "CO2-Ausstoß von Herstellerangaben und ADAC Ekotest über die Zeit bei deutschen Autos") +
@@ -45,4 +47,14 @@ geom_line(aes(y = C02.Ausstoß.Hersteller , color = "Herstellerangaben")) +
                      labels = c("ADAC Ekotest", "Herstellerangaben"),
                      name = "Legende") +
   theme_minimal()
-
+ Graphik_deutsch
+#Graphik ausländische autos
+Graphik_ausländisch  <-ggplot(ausländische_autos_gefiltert , aes(x = Baureihenstart,  )) + 
+  geom_line(aes(y = C02.Ausstoß.ADAC, color = "ADAC Ekotest")) +
+  geom_line(aes(y = C02.Ausstoß.Hersteller , color = "Herstellerangaben")) +
+  labs( x = "Bauenreihenstart", y= "C02 Ausstoß(g/km) " , title = "CO2-Ausstoß von Herstellerangaben und ADAC Ekotest über die Zeit bei ausländischen Autos") +
+  scale_color_manual(values = c("ADAC Ekotest" = "blue", "Herstellerangaben" = "red"),
+                     labels = c("ADAC Ekotest", "Herstellerangaben"),
+                     name = "Legende") +
+  theme_minimal()
+Graphik_ausländisch
