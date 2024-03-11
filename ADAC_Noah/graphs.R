@@ -41,8 +41,8 @@ ggplot(deutsche_autos_gefiltert , aes(x = Baureihenstart,  )) +
    geom_line(aes(y = C02.Ausstoß.ADAC, color = "ADAC Ekotest")) +
 geom_line(aes(y = C02.Ausstoß.Hersteller , color = "Herstellerangaben")) +
   labs( x = "Bauenreihenstart", y= "C02 Ausstoß(g/km) " , title = "CO2-Ausstoß von Herstellerangaben und ADAC Ekotest über die Zeit bei deutschen Autos") +
-  scale_color_manual(values = c("Herstellerangaben" = "blue", "ADAC Ekotest" = "red"),
-                     labels = c("Herstellerangaben", "ADAC Ekotest"),
+  scale_color_manual(values = c("ADAC Ekotest" = "blue", "Herstellerangaben" = "red"),
+                     labels = c("ADAC Ekotest", "Herstellerangaben"),
                      name = "Legende") +
   theme_minimal()
 
