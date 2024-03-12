@@ -1,0 +1,56 @@
+```{r Packages}
+library(tidyverse)
+```
+
+```{r Gesamtpumktzahl}
+data$Gesamtpumktzahl <- gsub(" Punkte", "", data$Gesamtpunktzahl)
+  
+data$Gesamtpumktzahl <- as.numeric(data$Gesamtpumktzahl)
+  data2$Gesamtpumktzahl <- data$Gesamtpumktzahl
+any(is.na(data$Gesamtpumktzahl))
+```
+
+```{r}
+data %>% 
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  ggplot(aes(x = CO2.Ausstoß_g.pro.km, y = Gesamtpumktzahl)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "tests",
+    y = "Gesamtpumktzahl"
+  )
+
+##tests elektro vs verbrenner
+
+##tests nach karosserie
+
+##tests nach preis (klasse)
+data %>% 
+  drop_na(Grundpreis) %>% 
+  ggplot(aes(x = Grundpreis, y = Gesamtpumktzahl)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "tests",
+    y = "Gesamtpumktzahl"
+  )
+    #ist preis mitgerechnet? Also wird auto besser aber durch hohen preis gleicht sich Punktzahl aus?
+        # vllt mit Autoklasse anschauen? Irgendwie autos mit gleicher Qualität??
+
+##tests nach fahrzeugklasse
+
+##tests nach CO2 ohne elektro & (hybrid)
+data %>% 
+  filter(Motorart != "Verbrenner") %>%
+  drop_na(CO2.Ausstoß_g.pro.km) %>% 
+  ggplot(aes(x = CO2.Ausstoß_g.pro.km, y = Gesamtpumktzahl)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "tests",
+    y = "Gesamtpumktzahl"
+  )
+```
+
+
