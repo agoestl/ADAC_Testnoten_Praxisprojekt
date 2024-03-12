@@ -273,7 +273,7 @@ average_CO2_Verhaeltnis_deutsch <- data %>%
   geom_line(aes(y = CO2.Ausstoß_g.pro.km, color = "Hersteller")) +
   facet_wrap(~deutscher.Hersteller) +
   labs(
-    title = "ADAC-Ecotest vs Herstellernangabe",
+    title = "ADAC-Ecotest vs Herstellerangabe",
     y = "CO2-Ausstoß in g/km",
     color = ""
   ) +
@@ -387,9 +387,8 @@ volumen <- data %>%
   mutate(Volumen = (Länge * Breite * Höhe) / 1000000) %>% 
   ggplot(aes(x = Baureihenstart, y = Volumen)) +
   geom_smooth(method = "loess", se = FALSE, na.rm = TRUE) + 
-  labs(title = "Größe pro Zeit",
-       y = "Größe in Liter", 
-       color = "Marke")
+  labs(title = "Größe nach Baureihenstart",
+       y = "Volumen in Liter")
 
 # Größe des Autos im Vergleich zur Zeit udn Antriebsart
 volumen_motorart <- data %>% 
@@ -398,8 +397,8 @@ volumen_motorart <- data %>%
   mutate(Volumen = (Länge * Breite * Höhe) / 1000000) %>% 
   ggplot(aes(x = Baureihenstart, y = Volumen, color = Motorart)) + 
   geom_smooth(method = "loess", se = FALSE, na.rm = TRUE) + 
-  labs(title = "Größe pro Zeit",
-       y = "Größe in Liter", 
+  labs(title = "Größe nach Baureihenstart",
+       y = "Volumen in Liter", 
        color = "Motorart")
 
 # Verhältniss Karosserie relativ zur Zeit
@@ -641,12 +640,12 @@ laufendeKosten_motorart / laufendeKosten_motorart_wertverlust
 volumen
 ```
 
-## Größe der Motorarten
+## Größe nach Motorarten
 ```{r, echo=FALSE, message=FALSE}
 volumen_motorart
 ```
 
-## Karosserie und Treibstoffverbrauch
+## Karosserie
 ```{r, echo=FALSE, message=FALSE}
 karosserie
 ```
