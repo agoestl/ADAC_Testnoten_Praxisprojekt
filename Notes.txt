@@ -4,35 +4,25 @@ Fragen an Bühler:
 
 
 
+Fragen an Scheipel :
+
+-
+
+
 
 
 Notizen:
 
-- Zeitverlauf für Analyse
-
-- Vorstellung 1. Folie Motivation
-
-- Zusammenhängende Präsentation
-
-- Dieselskandal Auswirkungen?
-
-- deutsche Autobauer vs Rest
-
-- motivation für die Entfernung der Zeilen / Spalten 
-
-- janitor in r 
-
-- methoden erklären geom smooth etc 
-
 - bei Grafiken auf die Farben achten etc. 
 
-- bei der ersten Folie anmerken, dass die Daten vom ADAC ausgewählt wurden 
+- bei der ersten Folie anmerken, dass die Daten vom ADAC ausgewählt wurden
 
 - letzte Slide Summary mit links zu den einzelnen Folien 
 
+- erwähnen warum nicht Note sondern Punkte
+
+- geom_smooth erklären
+
+- top marken erklären
 
 
-
-Fragen an Scheipel :
-
--
