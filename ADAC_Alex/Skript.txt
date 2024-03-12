@@ -1,0 +1,109 @@
+Folie 11: 
+
+- Grafik erklären 
+
+- zu Beginn ist nur Verbrenner in den Daten 
+
+- seit 2003 gleichzeitig Hybrid und Gas in den Daten vorhanden
+
+- seit 2010 Elektro in den Daten vorhanden
+
+- ab 2015 starker anstieg von hybrid Fahrzeugen 
+
+- ab 2017 starker Anstieg der Elektro Fahrzeugen 
+
+- Gas Fahrzeuge immer geringer als 12 % der daten im Schnitt eher 5 %
+
+- ab 2021 sinken löst Elektro die Verbrenner ab als größte Häufigkeit 
+
+- seit 2020 stagniert der Hybrid sektor und wird 2021 auch überholt
+
+- am Ende hat Elektro einen anteil von fast 75% und weiter steigend 
+
+- Gas liegt bei ca 1 % und Verbrenner und Hybrid beide bei ca 20 - 15 %
+
+Folie 12: 
+
+- Grafik erklären 
+
+- Daten besten aus ausländischen Marken und deutschen Marken 
+
+- 25% größerer Anteil an Elektor Modellen in deutschland als im Ausland
+
+- bei Ausländischne Marken ist Gas noch weniger Vorhanden
+
+- Anteil an Hybrid Fahrzeugen steigt seit 2013 während in Deutschland erst seit 2018 
+
+- dafür liegt der Peak bei Hybrid Fahrzeugen von 2018-2023 im Ausland um ca 10% höher am Ende um ca 5% 
+
+- der Abfall bei Verbrenner im Ausland ist stärker als in Deutschland liegt am Ende bei ca 10% in Deutschland bei 15% 
+
+Folie 13:
+
+- Grafik erklären (was ist Hubraum) 
+
+- seit 2015 starker Anstieg an Leistung vorher eher Mäßiger Anstieg seit 2000
+
+- seit 1996 starker Abfall der Hubraumgröße bis das Minimum 2022 erreicht ist mit ca 1500 ccm
+
+- dabei gibt es eine Durschnittliche Leistung von über 200 PS 
+
+- im Vergleich dazu hat ein Harly Davidson also ein Motorrad eine Hubraumgröße von 1800 ccm und eine Leistung von 100 PS
+
+- könnte darauf Schließen, dass die Motoren immer effizienter werden 
+ 
+Folie 14:
+
+- Grafik erklären 
+
+- auswahl der Daten bestehen aus den 3 europäischen Marken die am Häufigsten im Datensatz vorkommen und den 3 top nicht europäischen Marken 
+
+- wenn wir von Top Marken sprechen meinen wir die Häufigkeit im Datensatz 
+
+- wie zu erwarten MC und BMW am teuersten 50000€, dafür VW ähnlich wie die nicht europäischen Marken bei ca 300000€ 
+
+Folie 15:
+
+- Grafik erklären
+
+- Grundidee wieviel muss man pro Marke für eine gute Effizienzklasse Zahlen 
+
+- MC und BMW wieder im Durschnitt am teuersten
+
+- bei MC ist Effizienzklasse B am günstigsten bei BMW ebenfalls
+
+- die nicht EU Marken sind günstig aber bei A+ ist VW am günstigsten und VW bleibt recht konstant über alle Klassen bis auf die Schlechteste da ein leichter Anstieg 
+
+- bei den nicht EU Marken sinkt der Durschnittspreis von A+ bis F von ca 30000€ auf unter 20000€ und bei der schlechtesten wieder zurück auf die 30000€
+
+- am teuersten ist MC in der schlechtesten Effizienzklasse und der generelle Anstieg bei G liegt eventuell an Sportwagen spricht viel Geld wenig Effizienz 
+
+Folie 16:
+
+- die drei Plots erklären (Definitionen ADAC)
+
+- Betriebskosten: Tanken/Laden, Waschen, Motoröl 
+
+- Fixkosten: Pauschale für allgemeine Kosten, Haftplicht- und Vollkaskoversicherung 
+
+- Werkstattkosten: Inspektionen, Verschleißreperaturen, Reifenersatz
+
+- Betriebskosten am höchsten bei Verbrenner hauptsächlich durch Sprit / Motoröl
+
+- Werkstattkosten bei Hybrid am höchsten aufgrund der zusätzlichen Technik 
+
+- Fixkosten bei Hybrid auch am höchsten 
+
+- bei Hybrid aufsummiert liegen wir bei ca 900€ gleich wie bei Verbrenner 
+
+- bei Gas bei ca 500€ und bei Elektro unter 500€
+
+- KFZ steuer wird ohne Befreiung berechnet (müsste eigentlich bei 0€ sein)
+
+- KFZ Steuer bei Eletkro am günstigsten (weil bis 2030 KFZ Steur bei 0€ danach bei 50%)
+
+- KFZ Steuer in Deutschland erhoben also kann varieren im Ausland 
+
+- Wertverlust bei Elektro Autos am höchsten mit ca 1750 € im Monat bei Verbrenner liegt er bei ca 1000€ bei Hybrid bei ca 1500€ und bei Gas am Niedrigsten bei 500€ im Monat 
+
+- generell sagt man 25% im ersten Jahr 
