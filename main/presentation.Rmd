@@ -653,7 +653,7 @@ motorart_realtiv_deutsch
 average_PS / average_hubraum
 ```
 
-## Durschnittlicher Grundpreis
+## Durchschnittlicher Grundpreis
 ```{r, echo=FALSE}
 preis_europaeisch
 ```
