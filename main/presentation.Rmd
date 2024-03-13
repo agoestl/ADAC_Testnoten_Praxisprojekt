@@ -685,6 +685,12 @@ volumen
 
 - Nicht-lineare Funktion approxmieren
 
+## Größe
+```{r, echo=FALSE, message=FALSE}
+volumen
+```
+
+
 ## Größe nach Motorarten
 ```{r, echo=FALSE, message=FALSE}
 volumen_motorart
