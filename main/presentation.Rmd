@@ -675,15 +675,15 @@ volumen
 
 ## Glättungskurve
 
-- konkrete x-Stellen zum Berechnen auswählen
+- Auswahl konkreter x-Stellen zur Berechnung
 
-- Datenpunkte im Bereich um x-Stellen anschauen
+- Auswahl der Datenpunkte im Bereich um die x-Stellen
 
-- Gewichte für Datenpunkte berechnen
+- Berechnung der Gewichte für ausgewählte Datenpunkte 
 
-- y-Werte für die x-Stellen aus Datenpunkte und Gewichten berechnen
+- Berechnung von y-Werten für die x-Stellen aus Datenpunkten und Gewichten
 
-- Nicht-lineare Funktion approxmieren
+- Approximation einer polynomiellen Funktion
 
 ## Größe
 ```{r, echo=FALSE, message=FALSE}
