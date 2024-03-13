@@ -1,0 +1,60 @@
+slide 2
+- Zu Anfangs projekt hatten Vollerhebung ADAC getesteten automodell
+
+- Webscraping
+
+- kleinerer Datensatz mit 3800 modellen in Zeilen und 364 Fahrzeugeigenschaften in Spalten
+
+slide 3
+- Aufgaben:
+  - Validierung & Bereinigung Datensatz 
+  - Zusammenhänge & Verteilungen interessanter Fahrezeugeigenschaften (Variablen) über Zeit darstellen
+  - Zusammenhang zwischen Variablen und ADAC Testnote 
+      Testnote: ADAC führt Autotests durch auf Website note 1-5, bei uns score von 0 - ???
+ 
+ slide 4     
+-Validierung und Bereinigung kurz:
+- Alle fehlenden Einträge zu NA ersetzt
+- Leere Fahrzeugeigenschaften entfernt
+- Doppelte Modelle entfernt
+
+slide 5
+- dannach Verteilungen und Zusammenhänge der Varaiablen angeschaut
+- wichtig: autos von adac gewählt, sind nicht zwingend repräsentation von wirklichkeit
+
+slide 6
+- Variable CO2-Ausstoß angeschaut, in g/km gemessen
+- durchschnitt des CO2 Ausstoß jedes Jahr geplottet
+- erkennbar, fällt stark ab, 2000 vs 2020
+
+slide 7
+- Sieht relative Häufigkeiten der Co2-Ausstoß Effizienzklasse über die Jahre
+- Vorallem erkennbar, dass inzwischen sehr viel mehr a & a+ als früher, deutlich weniger G und weniger f als früher
+=> Autos bekommen bessere Effizienzklasse zugeordnet
+
+slide 8
+- CO2 Ausstoß über zeit einmal mit Fahrzeugklassen(?) & einmal mit Leistung
+- Fahrzeugklassen: 
+  - Erkennbar, das kleinwagen immer schon umweltschonend
+  - Oberklasse hat sich am mesiten verbessert
+- PS:
+  - ähnlich: Autos mit viel PS deutlich sauberer geworden
+  - mit wenig PS ungefähr gleich geblieben
+  
+slide 9
+- Verhältniss ADAC-Ecotest (Selbstdurchgeführte Messung CO2 Ausstoßes g/km) und Herstellerangabe
+- Für density plot: Herstellerangabe durch ADAC Test geteilt, 
+- es werden keine E-Autos beachtet
+  => Höherer Wert als 1: Hersteller gibt weniger CO2 Ausstoß an als ADAC selbstest
+  - Rote Linie ist bei 1, alles was drauf liegt is gleich angegeben
+- Ekrennbar, das meisten autos bisl mehr als ADAC angegeben haben
+  
+slide 10
+- Sehen vergelich von CO2 Ausstoß von Herstellerangabe und ADAC tests über die Zeit aufgeteilt auf deutsche und nicht-deutsche Marken
+- wieder: Elektroautos nicht berücksichtigt
+- Erkennbar, zwischen nicht-deustch und deutsch kein großer unterschied
+- Laut herstellerangaben fällt der durchschnittliche CO2 Ausstoß über die Zeit
+- Laut ADACbleibt er jedoch gleich
+- Erkennbar: Abgasskandal, Herstellerangaben entsprechen nicht Echt Werte
+- Allerdings, kennen messverfahren ADAC nicht, kann also fehlerhaft sein
+  
