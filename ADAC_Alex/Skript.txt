@@ -36,7 +36,7 @@ Folie 12: Motorarten ausländisch deutsch
 - Anteil an Verbrenner im Ausland liegt am Ende bei ca 10% in Deutschland bei 15%
 
 
-Folie 13:
+Folie 13: Hubraumgröße und PS
 
 - Grafik erklären
 
@@ -49,7 +49,7 @@ Folie 13:
 - könnte darauf Schließen, dass die Motoren immer effizienter werden 
 
 
-Folie 14:
+Folie 14: Durschnittlicher Grundpreis
 
 - Grafik erklären 
 
@@ -58,7 +58,7 @@ Folie 14:
 - wie zu erwarten MC und BMW am teuersten 50k€, dafür VW ähnlich wie die nicht europäischen Marken bei ca 30k€ 
 
 
-Folie 15:
+Folie 15: Grundpreis der Effizienzklassen
 
 - Grafik erklären
 
@@ -76,7 +76,7 @@ Folie 15:
 
 
 
-Folie 16:
+Folie 16: Laufende Kosten
 
 - die drei Plots erklären (Definitionen ADAC)
 
