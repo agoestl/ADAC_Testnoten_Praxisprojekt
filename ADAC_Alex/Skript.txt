@@ -23,7 +23,7 @@ Folie 11: Relative Häufigkeiten Motorarten
 - am Ende hat Verbrenner einen anteil von nur noch 12%
 
 
-Folie 12: 
+Folie 12: Motorarten ausländisch deutsch 
 
 - Grafik erklären 
 
@@ -80,9 +80,10 @@ Folie 16:
 
 - die drei Plots erklären (Definitionen ADAC)
 
+
 - Betriebskosten: Tanken/Laden, Waschen, Motoröl 
 
-- Fixkosten: Pauschale für allgemeine Kosten, Haftplicht- und Vollkaskoversicherung 
+- Fixkosten: Pauschale für allgemeine Kosten, Haftplicht- und Vollkaskoversicherung
 
 - Werkstattkosten: Inspektionen, Verschleißreperaturen, Reifenersatz
 
