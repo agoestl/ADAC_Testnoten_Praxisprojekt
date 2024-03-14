@@ -19,47 +19,9 @@ Notizen:
 
 Präsentation:
 
-- Projektpartner begrüßen
-
 - Beschriftungen vergrößern
 
-- Wertverlust, KFZ-Steuer x-Achse Beschriftung entfernen
-
-- reltive Häufigkeiten aus Datensatz!
-
-- Anzahl entfernter Spalten und Zeilen entfernen
-
-- roter Faden bei Folie 5
-
-- Baureihenstart erklären
-
-- nicht nur Mittelwerte
-
-- Effizienzklasse stacked bar chart verwenden? (geim_area)
-
-- density Graph log_2 Skala, sagen dass Kerndichteschätzer gezeigt wird
-
-- Motorarten deutscher vs ausländisch area Graph verwenden?
-
-- PS und Hubraum boxplots über Jahre
-
-- Grundpreis nach Preis sotieren
-
-- Farben für Firmen ändern
-
-- Glättungskurve Berechnung eines gewichteten Mittelwertes
-
 - Größe in Volumen erklären
-
-- Karosserie stacked bar?
-
-- boxplots alpha Wert runter
-
-- Ausreißer sagen!
-
-- ADAC-Ecotest volle Punktewolke zeigen (oder Hexaplot dahinter)
-
-- Boxplots für Motorarten nach Größe der Gruppen hoch machen
 
 - Übergange von Sprechern machen
 

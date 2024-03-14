@@ -191,7 +191,7 @@ data$Leistung.in.kW <- as.numeric(data$Leistung.in.kW)
 
 # Farbvektoren
 color_vector_marke <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00")
-color_vector_motor <- c("red", "blue3", "orange", "darkgrey")
+color_vector_motor <- c("red", "blue", "#CC33FF", "darkgrey")
 ```
 
 ```{r Grafiken, include=FALSE}
@@ -212,17 +212,18 @@ average_CO2 <- data %>%
 
 #relative Verteilung der Effizienzklassen über die Zeit (Abgasskandal 2015)
 average_CO2_Effizienz <- data %>% 
+  drop_na(CO2.Effizienzklasse) %>% 
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
   mutate(Anzahl.Jahr = n()) %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), CO2.Effizienzklasse) %>%
   mutate(Anzahl.Jahr.CO2.Effizienzklasse = n()) %>%
-  drop_na(CO2.Effizienzklasse) %>%
   mutate(relativ.CO2.Effizienzklasse = Anzahl.Jahr.CO2.Effizienzklasse / Anzahl.Jahr) %>%   
   ggplot(aes(x = Baureihenstart, y = relativ.CO2.Effizienzklasse)) + 
   geom_line() + 
   labs(
     title = "Effizienzklassenverteilung",
-    x = "Baureihenstart", y = "relative Häufigkeiten",
+    x = "Baureihenstart",
+    y = "relative Häufigkeiten",
     color = "CO2.Effizienzklasse") +
   facet_wrap(~CO2.Effizienzklasse, axes = "all")
 
@@ -233,7 +234,7 @@ average_CO2_Fahrzeugklasse <- data %>%
   drop_na(CO2.Ausstoß_g.pro.km) %>% 
   mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
   ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Fahrzeugklasse)) +
-  geom_line() +
+  geom_line(linewidth = 0.75) +
   labs(
     title = "Entwicklung des CO2-Ausstoßes nach Fahrzeugklassen",
     y = "CO2-Ausstoß in g/km"
@@ -249,7 +250,7 @@ average_CO2_PS <- data %>%
   group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year"), Leistung.maximal.in.PS..Systemleistung.) %>% 
   mutate(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
   ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Leistung.maximal.in.PS..Systemleistung.)) +
-  geom_line() +
+  geom_line(linewidth = 0.75) +
   labs(
     title = "Entwicklung des CO2-Ausstoß nach Leistung in PS (Verbrennermotor)",
     y = "CO2-Ausstoß in g/km",
@@ -268,7 +269,8 @@ average_CO2_Verhaeltnis <- data %>%
   geom_vline(xintercept = 1, color = "red") +
   labs(
     title = "Verteilung",
-    x = "Verhältnis (ADAC-Ecotest / Herstellerangabe)"
+    x = "Verhältnis (ADAC-Ecotest / Herstellerangabe)",
+    y = "Dichte"
   )
 
 # Verhältnis von CO2-Ausstoß ADAC-Ecotest und Herstellerangbe gruppiert nach deutscher.Hersteller (zwei Linien)
@@ -279,8 +281,8 @@ average_CO2_Verhaeltnis_deutsch <- data %>%
   mutate(CO2.ADAC.Test = mean(CO2.ADAC.Test),
          CO2.Ausstoß_g.pro.km = mean(CO2.Ausstoß_g.pro.km)) %>% 
   ggplot(aes(x = Baureihenstart)) +
-  geom_line(aes(y = CO2.ADAC.Test, color = "ADAC")) +
-  geom_line(aes(y = CO2.Ausstoß_g.pro.km, color = "Hersteller")) +
+  geom_line(aes(y = CO2.ADAC.Test, color = "ADAC"), linewidth = 0.75) +
+  geom_line(aes(y = CO2.Ausstoß_g.pro.km, color = "Hersteller"), linewidth = 0.75) +
   facet_wrap(~deutscher.Hersteller) +
   labs(
     title = "ADAC-Ecotest vs Herstellerangabe (Verbrennermotor)",
@@ -299,7 +301,7 @@ motorart_realtiv <- data %>%
   mutate(Anzahl.Jahr.Motorart = n()) %>% 
   mutate(relativ.Motorart = Anzahl.Jahr.Motorart / Anzahl.Jahr) %>% 
   ggplot(aes(x = Baureihenstart, y = relativ.Motorart, color = Motorart)) +
-  geom_line() +
+  geom_line(linewidth = 0.75) +
   labs(
     title = "Relative Häufigkeit der Motorarten nach Baureihenstart",
     y = "relative Häufigkeit"
@@ -315,7 +317,7 @@ motorart_realtiv_deutsch <- data %>%
   mutate(Anzahl.Jahr.Motorart = n()) %>% 
   mutate(relativ.Motorart = Anzahl.Jahr.Motorart / Anzahl.Jahr) %>% 
   ggplot(aes(x = Baureihenstart, y = relativ.Motorart, color = Motorart)) +
-  geom_line() +
+  geom_line(linewidth = 0.75) +
   facet_wrap(~deutscher.Hersteller) +
   labs(
     title = "Relative Häufigkeit der Motorarten nach Baureihenstart",
@@ -331,7 +333,7 @@ average_PS <- data %>%
   geom_line() +
   labs(
     title = "Leistung in PS nach Baureihenstart",
-    y = "PS"
+    y = "Leistung in PS"
   )
 
 # Hubraumgröße in ccm nach Baureihenstart (zeitliche Entwicklung)
@@ -351,10 +353,12 @@ preis_europaeisch <- data %>%
   filter(Marke %in% eu_nicht_eu_marken) %>% 
   group_by(Marke) %>%
   summarise(Grundpreis = mean(Grundpreis, na.rm = TRUE)) %>% 
-  ggplot(aes(x = Marke, y = Grundpreis, fill = Marke)) +
+  ggplot(aes(x = fct_reorder(Marke, desc(Grundpreis)), y = Grundpreis, fill = Marke)) +
   geom_col() + 
-  labs(title = "Durchschnittspreis pro Automarke",
-     y = "Durchschnittspreis in €") +
+  labs(
+    title = "Durchschnittspreis pro Automarke",
+    x = "Marke",
+    y = "Durchschnittspreis in €") +
   scale_fill_manual(values=color_vector_marke)
 
 # Grundpreis pro Marke für CO2-Effizienzklassen 
@@ -378,9 +382,9 @@ laufendeKosten_motorart <- df_long_Fix %>%
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "Laufende Kosten nach Antriebsart",
        x = "Antriebsart",
-       y = "Aufsummierte Fixkosten in €") +
+       y = "Fixkosten in €") +
   theme(legend.title = element_blank()) +
-  scale_fill_manual(values = c("#00CCFF", "#CC66CC", "#336600"))
+  scale_fill_manual(values = c("#00CCFF", "#FF99FF", "#336600"))
 
 # Wertverlust nach Antriebsart
 laufendeKosten_motorart_wertverlust <- data %>% 
@@ -391,7 +395,8 @@ laufendeKosten_motorart_wertverlust <- data %>%
        x = "Antriebsart",
        y = "Wertverlust in €") +
   scale_fill_manual(values = color_vector_motor) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
 
 # KFZ Steuer nach Antriebsart
 laufendeKosten_motorart_steuer <- data %>% 
@@ -402,7 +407,8 @@ laufendeKosten_motorart_steuer <- data %>%
        x = "Antriebsart",
        y = "KFZ Steuer in €") +
   scale_fill_manual(values = color_vector_motor) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
 
 # Größe des Autos im Vergleich zur Zeit  
 volumen <- data %>% 
@@ -436,7 +442,7 @@ karosserie <- data %>% filter(Karosserie %in% interssante_Karosserie) %>%
   mutate(Anzahl.Jahr.Karosserie = n()) %>%
   mutate(relativ.Karosserie = Anzahl.Jahr.Karosserie / Anzahl.Jahr) %>%   
   ggplot(aes(x = Baureihenstart, y = relativ.Karosserie, color = Karosserie)) + 
-  geom_line() + 
+  geom_line(linewidth = 0.75) + 
   labs(title = "relative Verteilung der Karosserieformen",
        y = "relative Häufigkeiten", 
        color = "Karosserieform") +
@@ -451,7 +457,7 @@ ladezeit <- data %>%
   ggplot(aes(x = Baureihenstart, y = Ladezeiten_Schuko.2.3kW_mean)) +
   geom_line() + 
   labs(
-    title = "Entwicklung der durchschnittlichen Ladezeit",
+    title = "Entwicklung der durchschnittlichen Ladezeit (2,3 kW)",
     y = "Ladezeit des Autos in Minuten"
   )
 
@@ -500,7 +506,7 @@ batteriekapazitaet <- data %>%
 
 # Verteilung der Gesamtpunktzahl (geom_boxplot)
 punktzahl_verteilung <- ggplot(data, aes(x = Gesamtpunktzahl)) +
-  geom_boxplot() +
+  geom_boxplot(outlier.alpha = 0.35) +
   labs(
     title = "Verteilung der Gesamtpunktzahl"
   ) +
@@ -512,7 +518,7 @@ punktzahl_verteilung <- ggplot(data, aes(x = Gesamtpunktzahl)) +
 # Gesamtpunktzahl nach deutscher.Hersteller (geom_boxplot) (europäisch)
 europaeisch <- data %>% 
   ggplot(aes(y = europäischer.Hersteller, x = Gesamtpunktzahl)) +
-  geom_boxplot() +
+  geom_boxplot(outlier.alpha = 0.35) +
   labs(
     title = "Vergleich zwischen europäischen und nicht europäischen Herstellern",
     y = "Hersteller"
@@ -522,7 +528,7 @@ europaeisch <- data %>%
 marke <- data %>% 
   filter(Marke %in% eu_nicht_eu_marken) %>% 
   ggplot(aes(y = Marke, x = Gesamtpunktzahl, fill = Marke)) +
-  geom_boxplot() +
+  geom_boxplot(outlier.alpha = 0.35) +
   labs(
     title = "Vergleich zwischen Top Marken"
   ) +
@@ -531,10 +537,10 @@ marke <- data %>%
 # CO2-Ausstoß (ADAC) nach Gesamtpunktzahl
 CO2_ausstoß_adac <- data %>% 
   drop_na(CO2.ADAC.Test) %>% 
-  group_by(Gesamtpunktzahl) %>% 
-  mutate(CO2.ADAC.Test = mean(CO2.ADAC.Test)) %>% 
+  #group_by(Gesamtpunktzahl) %>% 
+  #mutate(CO2.ADAC.Test = mean(CO2.ADAC.Test)) %>% 
   ggplot(aes(x = Gesamtpunktzahl, y = CO2.ADAC.Test)) +
-  geom_point() +
+  geom_point(alpha = 0.25) +
   geom_smooth(method = "loess", se = FALSE, color = "red") +
   labs(
     title = "CO2-Ausstoß nach Gesamtpunktzahl",
@@ -545,7 +551,7 @@ CO2_ausstoß_adac <- data %>%
 motorart_punkte <- data %>% 
   drop_na(Motorart) %>% 
   ggplot(aes(y = Motorart, x = Gesamtpunktzahl, fill = Motorart)) +
-  geom_boxplot() +
+  geom_boxplot(outlier.alpha = 0.35, varwidth = TRUE) +
   labs(
     title = "Gesamtpunktzahl nach Motorart"
   ) +
@@ -609,8 +615,22 @@ CO2_ausstoß <- data %>%
 
 - Doppelte Modelle entfernt
 
+- 1056 Zeilen entfernt
+
+- 75 Spalten entfernt
+
 
 ## Darstellung von Verteilungen und Zusammenhänge interessanter Variablen über die Zeit
+
+- CO2-Ausstoß
+
+- Motorarten
+
+- Kosten
+
+- Fahrzeuggröße
+
+- Elektroautos
 
 
 ## CO2-Ausstoß
@@ -681,17 +701,17 @@ volumen
 
 - Berechnung der Gewichte für ausgewählte Datenpunkte 
 
-- Berechnung von y-Werten für die x-Stellen aus Datenpunkten und Gewichten
+- Berechnung eines gewichteten Mittelwertes
 
 - Approximation einer polynomiellen Funktion
 
-## Größe
+## Fahrzeuggröße
 ```{r, echo=FALSE, message=FALSE}
 volumen
 ```
 
 
-## Größe nach Motorarten
+## Fahrzeuggröße nach Motorarten
 ```{r, echo=FALSE, message=FALSE}
 volumen_motorart
 ```
