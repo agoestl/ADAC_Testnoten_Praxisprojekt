@@ -196,7 +196,7 @@ color_vector_motor <- c("red", "blue", "#CC33FF", "darkgrey")
 
 ```{r Grafiken, include=FALSE}
 # Theme festlegen
-theme_set(theme_bw(base_size = 15))
+theme_set(theme_bw(base_size = 13))
 
 # Allgemeine Entwicklung CO2 Ausstoß (zeitliche Entwicklung)
 average_CO2 <- data %>% 
@@ -227,7 +227,8 @@ average_CO2_Effizienz <- data %>%
     color = "CO2.Effizienzklasse") +
   facet_wrap(~CO2.Effizienzklasse, axes = "all") +
   theme(text = element_text(size = 11),
-        axis.title = element_text(size = 15))
+        axis.title = element_text(size = 13),
+        title = element_text(size = 13))
 
 # Entwicklung CO2 Ausstoß pro Fahrzeugklasse (zeitliche Entwicklung)
 average_CO2_Fahrzeugklasse <- data %>% 
@@ -460,7 +461,7 @@ ladezeit <- data %>%
   geom_line() + 
   labs(
     title = "Entwicklung der durchschnittlichen Ladezeit (2,3 kW)",
-    y = "Ladezeit des Autos in Minuten"
+    y = "Ladezeit in Minuten"
   )
 
 #Durchschnittliche Reichweite pro Jahr mit Baureihenstart
@@ -473,7 +474,7 @@ reichweite <- data %>%
   geom_line() + 
   labs(
     title = "Entwicklung der durchschnittlichen Reichweite von Elektromotoren",
-    y = "Reichweite des Autos in km"
+    y = "Reichweite in km"
   )
 
 #Durchschnittliche Reichweite pro Jahr mit Baureihenstart verglichen mit Verbrennern
@@ -485,8 +486,8 @@ reichweite_mitVerbrenner <- data2 %>%
   ggplot(aes(x = Baureihenstart, y = Reichweite.Gesamt_mean, color = Motorart)) +
   geom_line() + 
   labs(
-    title = "Entwicklung der durchschnittlichen Reichweite von Elektromotoren vs Verbrenner",
-    y = "Reichweite des Autos in km"
+    title = "Elektromotoren vs Verbrenner",
+    y = "Reichweite in km"
   ) +
   scale_color_manual(values = c("red", "darkgrey"))
 
@@ -522,7 +523,7 @@ europaeisch <- data %>%
   ggplot(aes(y = europäischer.Hersteller, x = Gesamtpunktzahl)) +
   geom_boxplot(outlier.alpha = 0.35) +
   labs(
-    title = "Vergleich zwischen europäischen und nicht europäischen Herstellern",
+    title = "europäische vs nicht europäische Hersteller",
     y = "Hersteller"
   )
 
