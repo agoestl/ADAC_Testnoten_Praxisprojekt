@@ -196,7 +196,7 @@ color_vector_motor <- c("red", "blue", "#CC33FF", "darkgrey")
 
 ```{r Grafiken, include=FALSE}
 # Theme festlegen
-theme_set(theme_bw())
+theme_set(theme_bw(base_size = 15))
 
 # Allgemeine Entwicklung CO2 Ausstoß (zeitliche Entwicklung)
 average_CO2 <- data %>% 
@@ -225,7 +225,9 @@ average_CO2_Effizienz <- data %>%
     x = "Baureihenstart",
     y = "relative Häufigkeiten",
     color = "CO2.Effizienzklasse") +
-  facet_wrap(~CO2.Effizienzklasse, axes = "all")
+  facet_wrap(~CO2.Effizienzklasse, axes = "all") +
+  theme(text = element_text(size = 11),
+        axis.title = element_text(size = 15))
 
 # Entwicklung CO2 Ausstoß pro Fahrzeugklasse (zeitliche Entwicklung)
 average_CO2_Fahrzeugklasse <- data %>% 
