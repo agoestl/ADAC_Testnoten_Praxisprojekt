@@ -223,7 +223,7 @@ average_CO2_Effizienz <- data %>%
   labs(
     title = "Effizienzklassenverteilung",
     x = "Baureihenstart",
-    y = "relative Häufigkeiten",
+    y = "relative Häufigkeit",
     color = "CO2.Effizienzklasse") +
   facet_wrap(~CO2.Effizienzklasse, axes = "all") +
   theme(text = element_text(size = 11),
@@ -255,7 +255,7 @@ average_CO2_PS <- data %>%
   ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Leistung.maximal.in.PS..Systemleistung.)) +
   geom_line(linewidth = 0.75) +
   labs(
-    title = "Entwicklung des CO2-Ausstoß nach Leistung in PS (Verbrennermotor)",
+    title = "Entwicklung des CO2-Ausstoßes nach Leistung in PS (Verbrennermotor)",
     y = "CO2-Ausstoß in g/km",
     color = "PS"
   ) +
@@ -384,7 +384,7 @@ laufendeKosten_motorart <- df_long_Fix %>%
   ggplot(aes(x = Motorart, y = Fixkosten, fill = Position)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "Laufende Kosten nach Motorart",
-       y = "Fixkosten in €") +
+       y = "Kosten in €") +
   theme(legend.title = element_blank()) +
   scale_fill_manual(values = c("#00CCFF", "#FF99FF", "#336600"))
 
@@ -444,7 +444,7 @@ karosserie <- data %>% filter(Karosserie %in% interssante_Karosserie) %>%
   ggplot(aes(x = Baureihenstart, y = relativ.Karosserie, color = Karosserie)) + 
   geom_line(linewidth = 0.75) + 
   labs(title = "relative Verteilung der Karosserieformen",
-       y = "relative Häufigkeiten", 
+       y = "relative Häufigkeit", 
        color = "Karosserieform") +
   scale_color_brewer(palette = "Set2")
 
@@ -621,8 +621,8 @@ reichweite_batterie <- data %>%
   geom_smooth(method = "loess", se = FALSE, color = "red") +
   labs(
     title = "Reichweite nach Batterienkapazität von Elektromotoren",
-    x = "Battarienkapazität",
-    y = "Recihweite in km"
+    x = "Batterienkapazität",
+    y = "Reichweite in km"
   )
 
 # Grundpreis nach Gesamtpunktzahl
