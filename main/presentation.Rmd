@@ -375,7 +375,7 @@ preis_marke_effizienz <- data %>% filter(Marke %in% eu_nicht_eu_marken ) %>%
        fill = "Marke") +
   scale_fill_manual(values=color_vector_marke)
 
-# Laufende kosten im vergleich mit Antriebsart (ohne "Haftpflichtbeitrag.100." da bei allen gleich)
+# Laufende kosten im vergleich mit Motorart (ohne "Haftpflichtbeitrag.100." da bei allen gleich)
 pivot_cols_Fix <- c("Betriebskosten", "Werkstattkosten", "Fixkosten") 
 df_long_Fix <- data %>% pivot_longer(cols = all_of(pivot_cols_Fix), names_to = "Position", values_to = "Fixkosten")
 
@@ -383,31 +383,28 @@ laufendeKosten_motorart <- df_long_Fix %>%
   drop_na(Motorart) %>% 
   ggplot(aes(x = Motorart, y = Fixkosten, fill = Position)) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Laufende Kosten nach Antriebsart",
-       x = "Antriebsart",
+  labs(title = "Laufende Kosten nach Motorart",
        y = "Fixkosten in €") +
   theme(legend.title = element_blank()) +
   scale_fill_manual(values = c("#00CCFF", "#FF99FF", "#336600"))
 
-# Wertverlust nach Antriebsart
+# Wertverlust nach Motorart
 laufendeKosten_motorart_wertverlust <- data %>% 
   drop_na(Motorart) %>% 
   ggplot(aes(x = Motorart, y = Wertverlust, fill = Motorart)) +
   geom_bar(stat = "identity", position = "dodge", show.legend = FALSE) +
   labs(title = "Wertverlust",
-       x = "Antriebsart",
        y = "Wertverlust in €") +
   scale_fill_manual(values = color_vector_motor) +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank())
 
-# KFZ Steuer nach Antriebsart
+# KFZ Steuer nach Motorart
 laufendeKosten_motorart_steuer <- data %>% 
   drop_na(Motorart) %>% 
   ggplot(aes(x = Motorart, y = `KFZ Steuer`, fill = Motorart)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "KFZ Steuer",
-       x = "Antriebsart",
        y = "KFZ Steuer in €") +
   scale_fill_manual(values = color_vector_motor) +
   theme(axis.text.x = element_blank(),
@@ -425,7 +422,7 @@ volumen <- data %>%
   labs(title = "Größe nach Baureihenstart",
        y = "Volumen in Liter")
 
-# Größe des Autos im Vergleich zur Zeit und Antriebsart
+# Größe des Autos im Vergleich zur Zeit und Motorart
 volumen_motorart <- data %>% 
   drop_na(Motorart) %>% 
   group_by(Motorart, Baureihenstart) %>% 
@@ -433,8 +430,8 @@ volumen_motorart <- data %>%
   ggplot(aes(x = Baureihenstart, y = Volumen, color = Motorart)) + 
   geom_smooth(method = "loess", se = FALSE, na.rm = TRUE) + 
   labs(title = "Größe nach Baureihenstart",
-       y = "Volumen in Liter", 
-       color = "Motorart") +
+       y = "Volumen in Liter"
+  ) +
   scale_color_manual(values = color_vector_motor)
 
 # Verhältniss Karosserie relativ zur Zeit
@@ -706,7 +703,7 @@ leistung_punkte <- data %>%
 average_CO2
 ```
 
-## CO2 Effizienzklasse
+## CO2-Effizienzklassen
 ```{r, echo=FALSE}
 average_CO2_Effizienz
 ```
@@ -846,7 +843,7 @@ reichweite_punkte
 ## Fragen?
 
 - [CO2-Ausstoß](#6)
-- [CO2 Effizienzklasse](#7)
+- [CO2-Effizienzklassen](#7)
 - [CO2-Ausstoß Fahrzeugklase und PS](#8)
 - [Verhältnis zwischen ADAC-Ecotest und Herstellerangabe](#9)
 - [Vergleich zwischen ADAC-Ecotest und Herstellerangabe](#10)
