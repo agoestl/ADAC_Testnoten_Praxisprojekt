@@ -306,14 +306,13 @@ data %>%
        color = "Antriebsart")
 
 # Vergleich zwischen europäischen und nicht europäischen Marken 
-
 data %>% filter(Marke %in% eu_nicht_eu_marken ) %>% 
-  group_by(Marke, Baureihenstart) %>%
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
   mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
-  ggplot(aes(x = Baureihenstart, y = Prize_average, color = Marke)) +
-  geom_smooth(method = "loess", span = 0.4, se = FALSE) + 
-  labs(title = "Durchschnittspreis pro Automarke über die Zeit", 
-     x = "Zeit", 
+  ggplot(aes(x = Baureihenstart, y = Prize_average)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") + 
+  labs(title = "Durchschnittspreis nach Baureihenstart",
      y = "Durchschnittspreis in €")
 
 # Grundpreis pro Marke für CO2-Effizienzklassen 
@@ -699,7 +698,6 @@ data %>% filter(Motorart == "Verbrenner") %>%
        color = "Karosserieform")
 
 # Leergewicht zu CO2 Ausstoß 
-  
 data %>% mutate(Verhältniss = Leergewicht..EU.in.kg/CO2.Ausstoß_g.pro.km)%>% 
   ggplot(aes(x = Baureihenstart, y = Verhältniss, color = Motorart)) + 
   geom_smooth(method = "loess", span = 0.7, se = FALSE, na.rm = TRUE) +   

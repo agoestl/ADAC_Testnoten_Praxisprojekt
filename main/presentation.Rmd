@@ -574,18 +574,83 @@ reichweite_punkte <- data %>%
   )
 ```
 
-```{r Nicht verwendete Graphen, include=FALSE}
-# CO2-Ausstoß nach Gesamtpunktzahl
-CO2_ausstoß <- data %>% 
+```{r ADD ON Grafiken, include=FALSE}
+# CO2-Ausstoß nach Leistung in PS
+CO2_ps <- data %>% 
+  group_by(Leistung.maximal.in.PS..Systemleistung.) %>% 
   drop_na(CO2.Ausstoß_g.pro.km) %>% 
-  group_by(Gesamtpunktzahl) %>% 
-  mutate(CO2.Ausstoß_g.pro.km = mean(CO2.Ausstoß_g.pro.km)) %>% 
-  ggplot(aes(x = Gesamtpunktzahl, y = CO2.Ausstoß_g.pro.km)) +
+  summarise(CO2.Ausstoß = mean(CO2.Ausstoß_g.pro.km)) %>% 
+  ggplot(aes(x = Leistung.maximal.in.PS..Systemleistung., y = CO2.Ausstoß)) +
   geom_point() +
   geom_smooth(method = "loess", se = FALSE, color = "red") +
   labs(
-    title = "CO2-Ausstoß nach Gesamtpunktzahl",
+    title = "CO2-Ausstoß nach Leistung in PS",
+    x = "PS",
     y = "CO2-Ausstoß in g/km"
+  )
+
+# Häufigkeit der einzelnen Motorarten
+motorart_haeufigkeit <- data %>% 
+  drop_na(Motorart) %>% 
+  ggplot(aes(x = Motorart, fill = Motorart)) + 
+  geom_bar() +
+  labs(
+    title = "Häufigkeit der einzelnen Motorarten",
+    y = "Anzahl"
+  ) +
+  scale_fill_manual(values = color_vector_motor)
+
+# Entwicklung des Durchschnittspreises
+average_price <- data %>% 
+  filter(Marke %in% eu_nicht_eu_marken ) %>% 
+  group_by(Baureihenstart = floor_date(Baureihenstart, unit = "year")) %>%
+  mutate(Prize_average = mean(Grundpreis, na.rm = TRUE)) %>% 
+  ggplot(aes(x = Baureihenstart, y = Prize_average)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") + 
+  labs(
+    title = "Durchschnittspreis nach Baureihenstart",
+    y = "Durchschnittspreis in €"
+  )
+
+# Reichweite nach Batteriekapazität
+reichweite_batterie <- data %>%
+  filter(Motorart == "Elektro") %>%
+  group_by(Batteriekapazität..Netto..in.kWh) %>% 
+  drop_na(Reichweite.elektrisch.in.km) %>% 
+  summarise(Reichweite.elektisch.in.km_mean = mean(Reichweite.elektrisch.in.km)) %>% 
+  ggplot(aes(x = Batteriekapazität..Netto..in.kWh, y = Reichweite.elektisch.in.km_mean)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Reichweite nach Batterienkapazität von Elektromotoren",
+    x = "Battarienkapazität",
+    y = "Recihweite in km"
+  )
+
+# Grundpreis nach Gesamtpunktzahl
+preis_punkte <- data %>% 
+  drop_na(Grundpreis) %>% 
+  group_by(Gesamtpunktzahl, Motorart) %>% 
+  mutate(Grundpreis = mean(Grundpreis)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Grundpreis)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Grundpreis nach Gesamtpunktzahl",
+    y = "Grundpreis in Euro"
+  )
+
+# Leistung nach Gesamtpunktzahl
+leistung_punkte <- data %>% 
+  group_by(Gesamtpunktzahl) %>% 
+  mutate(Leistung.maximal.in.PS..Systemleistung. = mean(Leistung.maximal.in.PS..Systemleistung.)) %>% 
+  ggplot(aes(x = Gesamtpunktzahl, y = Leistung.maximal.in.PS..Systemleistung.)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Leistung nach Gesamtpunktzahl",
+    y = "Leistung in PS"
   )
 ```
 
@@ -774,7 +839,9 @@ reichweite_punkte
 
 - Fahrzeuge werden größer
 
-- Reichweite der Elektroautos werden größer
+- Reichweite der Elektroautos wird größer
+
+- CO2-Ausstoß hat großen Einfluss auf die Gesamtpunktzahl
 
 ## Fragen?
 
@@ -803,3 +870,36 @@ reichweite_punkte
 - [ADAC-Ecotest und Gesamtpunktzahl](#28)
 - [Motorart und Gesamtpunktzahl](#29)
 - [Reichweite von Elektroautos](#30)
+
+## Zusatzgrafiken
+
+## CO2-Ausstoß nach Leistung in PS
+```{r, echo=FALSE, message=FALSE}
+CO2_ps
+```
+
+## Häufigkeit der einzelnen Motorarten
+```{r, echo=FALSE}
+motorart_haeufigkeit
+```
+
+## Entwicklung des Durchschnittspreises
+```{r, echo=FALSE, message=FALSE}
+average_price
+```
+
+## Reichweite nach Batteriekapazität
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+reichweite_batterie
+```
+
+## Grundpreis nach Gesamtpunktzahl
+```{r, echo=FALSE, message=FALSE}
+preis_punkte
+```
+
+## Leistung nach Gesamtpunktzahl
+```{r, echo=FALSE, message=FALSE}
+leistung_punkte
+```
+
