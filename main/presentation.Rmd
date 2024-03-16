@@ -641,7 +641,7 @@ CO2_ausstoß <- data %>%
 average_CO2
 ```
 
-## CO2-Ausstoß Effizienzklasse
+## CO2 Effizienzklasse
 ```{r, echo=FALSE}
 average_CO2_Effizienz
 ```
@@ -691,7 +691,7 @@ preis_marke_effizienz
 laufendeKosten_motorart / (laufendeKosten_motorart_wertverlust + laufendeKosten_motorart_steuer)
 ```
 
-## Größe
+## Fahrzeuggröße
 ```{r, echo=FALSE, message=FALSE}
 volumen
 ```
@@ -767,3 +767,39 @@ reichweite_punkte
 ```
 
 ## Zusammenfassung
+
+- CO2-Ausstoß wird geringer
+
+- Elektroautos gewinnen an Beliebtheit
+
+- Fahrzeuge werden größer
+
+- Reichweite der Elektroautos werden größer
+
+## Fragen?
+
+- [CO2-Ausstoß](#6)
+- [CO2 Effizienzklasse](#7)
+- [CO2-Ausstoß Fahrzeugklase und PS](#8)
+- [Verhältnis zwischen ADAC-Ecotest und Herstellerangabe](#9)
+- [Vergleich zwischen ADAC-Ecotest und Herstellerangabe](#10)
+- [Motorarten](#11)
+- [Motorarten deutsche und ausländische Hersteller](#12)
+- [Hubraumgröße und PS](#13)
+- [Durchschnittlicher Grundpreis](#14)
+- [Grundpreis der Effizienzklassen](#15)
+- [Laufende Kosten und Wertverlust](#16)
+
+## Fragen?
+
+- [Fahrzeuggröße](#19)
+- [Fahrzeuggröße nach Motorarten](#20)
+- [Karosserie](#21)
+- [Elektroautos Reichweite](#22)
+- [Ladezeit und Batteriekapazität](#23)
+- [Gesamtpunktzahl](#25)
+- [Gesamtpunktzahl im Herstellervergleich](#26)
+- [Gesamtpunktzahl im Markenvergleich](#27)
+- [ADAC-Ecotest und Gesamtpunktzahl](#28)
+- [Motorart und Gesamtpunktzahl](#29)
+- [Reichweite von Elektroautos](#30)
