@@ -255,7 +255,7 @@ average_CO2_PS <- data %>%
   ggplot(aes(x = Baureihenstart, y = CO2.Ausstoß, color = Leistung.maximal.in.PS..Systemleistung.)) +
   geom_line(linewidth = 0.75) +
   labs(
-    title = "Entwicklung des CO2-Ausstoßes nach Leistung in PS (Verbrennermotor)",
+    title = "Entwicklung des CO2-Ausstoßes nach Leistung in PS (Verbrenner)",
     y = "CO2-Ausstoß in g/km",
     color = "PS"
   ) +
@@ -288,7 +288,7 @@ average_CO2_Verhaeltnis_deutsch <- data %>%
   geom_line(aes(y = CO2.Ausstoß_g.pro.km, color = "Hersteller"), linewidth = 0.75) +
   facet_wrap(~deutscher.Hersteller) +
   labs(
-    title = "ADAC-Ecotest vs Herstellerangabe (Verbrennermotor)",
+    title = "ADAC-Ecotest vs Herstellerangabe (Verbrenner)",
     y = "CO2-Ausstoß in g/km",
     color = ""
   ) +
