@@ -1,28 +1,33 @@
-Fragen an Bühler: 
+doppelte Titel entfernen überschiften weglassen und font vom Titel größer machen
 
--
+folie 7 achsen entfernen mit facet wrap
+
+folie 13 +- 1 standartabweichung als band um die linie 
+
+erste Folie noch Projektpartener drauf 
+
+folie 17 auch Band hinter die Linie 
+
+folie 18 Bulletpoints überarbeiten vorallem der letzte
+
+folie 20 auch Band (Schwankungsbreiten) hinter die Linien
+
+folie 23 auch Band (Schwankungsbreiten) hinter die Linien
+
+folie 27 Legende weglassen
+
+folie 29 Legende weglassen
 
 
 
-Fragen an Scheipel :
-
--
 
 
+code muss durchlaufen !!!!
 
+Abstrakt
 
-Notizen:
+Grafiken als einzige Bilddateine 
 
-- letzte Slide Summary mit links zu den einzelnen Folien 
+von 30.03. - 09.04 Herr Scheipel nicht erreichbar 
 
-
-
-Präsentation:
-
-- Beschriftungen vergrößern
-
-- Größe in Volumen erklären
-
-- Übergange von Sprechern machen
-
-- nicht zur Wand sprechen
+12.04 Endabgabe 
