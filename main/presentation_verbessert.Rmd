@@ -378,7 +378,7 @@ preis_europaeisch <- data %>%
   labs(
     title = "Durchschnittspreis pro Automarke",
     x = "Marke",
-    y = "Durchschnittspreis in €") +
+    y = "Durchschnittspreis in Euro") +
   scale_fill_manual(values=color_vector_marke) +
   theme(plot.title = element_text(size = 20))
 
@@ -389,7 +389,7 @@ preis_marke_effizienz <- data %>% filter(Marke %in% eu_nicht_eu_marken ) %>%
   stat_summary(fun = "mean", geom = "bar", position = "dodge") +
     labs(title = "Durchschnittspreis nach CO2-Effizienzklasse",
        x = "CO2-Effizienzklasse",
-       y = "Durchschnittspreis in €",
+       y = "Durchschnittspreis in Euro",
        fill = "Marke") +
   scale_fill_manual(values=color_vector_marke) +
   theme(plot.title = element_text(size = 20))
@@ -403,7 +403,7 @@ laufendeKosten_motorart <- df_long_Fix %>%
   ggplot(aes(x = Motorart, y = Fixkosten, fill = Position)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "Laufende Kosten nach Motorart",
-       y = "Kosten in €") +
+       y = "Kosten in Euro") +
   theme(legend.title = element_blank()) +
   scale_fill_manual(values = c("#00CCFF", "#FF99FF", "#336600")) +
   theme(plot.title = element_text(size = 20))
@@ -414,7 +414,7 @@ laufendeKosten_motorart_wertverlust <- data %>%
   ggplot(aes(x = Motorart, y = Wertverlust, fill = Motorart)) +
   geom_bar(stat = "identity", position = "dodge", show.legend = FALSE) +
   labs(title = "Wertverlust",
-       y = "Wertverlust in €") +
+       y = "Wertverlust in Euro") +
   scale_fill_manual(values = color_vector_motor) +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
@@ -426,7 +426,7 @@ laufendeKosten_motorart_steuer <- data %>%
   ggplot(aes(x = Motorart, y = `KFZ Steuer`, fill = Motorart)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "KFZ Steuer",
-       y = "KFZ Steuer in €") +
+       y = "KFZ Steuer in Euro") +
   scale_fill_manual(values = color_vector_motor) +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
@@ -651,7 +651,7 @@ average_price <- data %>%
   geom_smooth(method = "loess", color = "red", alpha = 0.2) + 
   labs(
     title = "Durchschnittspreis nach Baureihenstart",
-    y = "Durchschnittspreis in €"
+    y = "Durchschnittspreis in Euro"
   ) +
   theme(plot.title = element_text(size = 20))
 
