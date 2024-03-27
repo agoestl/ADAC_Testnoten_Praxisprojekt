@@ -278,7 +278,7 @@ average_CO2_Verhaeltnis <- data %>%
   geom_density() +
   geom_vline(xintercept = 1, color = "red") +
   labs(
-    title = "Verteilung",
+    title = "Verteilung ADAC-Ecotest vs. Herstellerangbe",
     x = "Verhältnis (ADAC-Ecotest / Herstellerangabe)",
     y = "Dichte"
   ) +
